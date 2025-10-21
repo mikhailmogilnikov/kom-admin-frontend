@@ -84,7 +84,7 @@ const DashboardComponent = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 max-md:px-4 max-md:py-8">
       <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
         <div className="flex flex-col gap-2 max-md:w-full">
           <h1 className="font-bold text-3xl">Дашборд</h1>
