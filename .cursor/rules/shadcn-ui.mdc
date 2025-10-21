@@ -1,0 +1,985 @@
+---
+description: "Use shadcn/ui components as needed for any UI code"
+patterns: "*.tsx"
+alwaysApply: false
+applyIntelligently: |
+  Apply this rule when:
+  - Creating or updating UI components
+  - Building forms, dialogs, menus, or other interactive elements
+  - Adding navigation components (breadcrumbs, pagination, sidebars)
+  - Creating data display components (tables, cards, charts)
+  - Implementing feedback components (toasts, alerts, progress indicators)
+  - Styling buttons, inputs, or other form elements
+  - Building responsive layouts with components
+  - Adding accessibility features to UI elements
+
+  Do NOT apply when:
+  - Working with route definitions
+  - Writing business logic or data fetching
+  - Configuring build tools or dev environment
+  - Writing tests (unless testing UI components)
+---
+
+# Shadcn UI Components
+
+This project uses [shadcn/ui](https://ui.shadcn.com) for UI components. These are beautifully designed, accessible components built with Radix UI and Tailwind CSS that you can copy and paste into your apps.
+
+## Component Location
+
+Components are available in the `src/shared/ui` directory (following ED architecture), using the aliases configured in `components.json`.
+
+## Installation & Setup
+
+### Installing Components
+
+To add new components, use the Shadcn CLI:
+
+```bash
+npx shadcn@latest add [component-name]
+```
+
+Examples:
+
+```bash
+# Single component
+npx shadcn@latest add button
+
+# Multiple components
+npx shadcn@latest add button input card
+
+# All form components
+npx shadcn@latest add form label input textarea select checkbox radio-group switch
+```
+
+> **Note:** `npx shadcn-ui@latest` is deprecated, always use `npx shadcn@latest`
+
+### Configuration
+
+This project uses:
+
+- **Style:** "new-york" variant
+- **Base Color:** "neutral"
+- **Theming:** CSS variables
+- **Location:** `src/shared/ui/` (aligned with ED architecture)
+
+## Using Components
+
+Import components from the ui directory using the configured alias:
+
+```tsx
+import { Button } from "@/shared/ui/button";
+import { Input } from "@/shared/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+```
+
+## Available Components
+
+### Layout & Structure
+
+#### **Card**
+
+```tsx
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/ui/card";
+
+<Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Card Description</CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>Card Content</p>
+  </CardContent>
+  <CardFooter>
+    <p>Card Footer</p>
+  </CardFooter>
+</Card>;
+```
+
+#### **Separator**
+
+```tsx
+import { Separator } from "@/shared/ui/separator"
+
+<Separator />
+<Separator orientation="vertical" />
+```
+
+#### **Aspect Ratio**
+
+```tsx
+import { AspectRatio } from "@/shared/ui/aspect-ratio";
+
+<AspectRatio ratio={16 / 9}>
+  <img src="..." alt="..." />
+</AspectRatio>;
+```
+
+#### **Scroll Area**
+
+```tsx
+import { ScrollArea } from "@/shared/ui/scroll-area";
+
+<ScrollArea className="h-72 w-48">{/* Content */}</ScrollArea>;
+```
+
+#### **Resizable**
+
+```tsx
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/shared/ui/resizable";
+
+<ResizablePanelGroup direction="horizontal">
+  <ResizablePanel>One</ResizablePanel>
+  <ResizableHandle />
+  <ResizablePanel>Two</ResizablePanel>
+</ResizablePanelGroup>;
+```
+
+### Navigation
+
+#### **Breadcrumb**
+
+```tsx
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/shared/ui/breadcrumb";
+
+<Breadcrumb>
+  <BreadcrumbList>
+    <BreadcrumbItem>
+      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+    </BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem>
+      <BreadcrumbPage>Current</BreadcrumbPage>
+    </BreadcrumbItem>
+  </BreadcrumbList>
+</Breadcrumb>;
+```
+
+#### **Navigation Menu**
+
+```tsx
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/shared/ui/navigation-menu";
+```
+
+#### **Sidebar**
+
+```tsx
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarHeader,
+} from "@/shared/ui/sidebar";
+```
+
+#### **Pagination**
+
+```tsx
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/shared/ui/pagination";
+```
+
+#### **Menubar**
+
+```tsx
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from "@/shared/ui/menubar";
+```
+
+### Buttons & Interactions
+
+#### **Button**
+
+```tsx
+import { Button } from "@/shared/ui/button"
+
+<Button variant="default">Default</Button>
+<Button variant="destructive">Destructive</Button>
+<Button variant="outline">Outline</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="link">Link</Button>
+
+<Button size="default">Default</Button>
+<Button size="sm">Small</Button>
+<Button size="lg">Large</Button>
+<Button size="icon"><Icon /></Button>
+```
+
+#### **Button Group**
+
+```tsx
+import { ButtonGroup } from "@/shared/ui/button-group";
+
+<ButtonGroup>
+  <Button>One</Button>
+  <Button>Two</Button>
+  <Button>Three</Button>
+</ButtonGroup>;
+```
+
+#### **Toggle**
+
+```tsx
+import { Toggle } from "@/shared/ui/toggle";
+
+<Toggle aria-label="Toggle italic">
+  <Italic className="h-4 w-4" />
+</Toggle>;
+```
+
+#### **Toggle Group**
+
+```tsx
+import { ToggleGroup, ToggleGroupItem } from "@/shared/ui/toggle-group";
+
+<ToggleGroup type="single">
+  <ToggleGroupItem value="a">A</ToggleGroupItem>
+  <ToggleGroupItem value="b">B</ToggleGroupItem>
+</ToggleGroup>;
+```
+
+### Forms & Inputs
+
+#### **Form**
+
+```tsx
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/shared/ui/form";
+```
+
+#### **Input**
+
+```tsx
+import { Input } from "@/shared/ui/input"
+
+<Input type="email" placeholder="Email" />
+<Input type="password" placeholder="Password" />
+```
+
+#### **Input Group**
+
+```tsx
+import { InputGroup } from "@/shared/ui/input-group";
+```
+
+#### **Input OTP**
+
+```tsx
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/shared/ui/input-otp";
+
+<InputOTP maxLength={6}>
+  <InputOTPGroup>
+    <InputOTPSlot index={0} />
+    <InputOTPSlot index={1} />
+  </InputOTPGroup>
+</InputOTP>;
+```
+
+#### **Textarea**
+
+```tsx
+import { Textarea } from "@/shared/ui/textarea";
+
+<Textarea placeholder="Type your message here." />;
+```
+
+#### **Select**
+
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui/select";
+
+<Select>
+  <SelectTrigger>
+    <SelectValue placeholder="Select..." />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="1">Option 1</SelectItem>
+    <SelectItem value="2">Option 2</SelectItem>
+  </SelectContent>
+</Select>;
+```
+
+#### **Native Select**
+
+```tsx
+import { NativeSelect } from "@/shared/ui/native-select";
+```
+
+#### **Combobox**
+
+```tsx
+import { Combobox } from "@/shared/ui/combobox";
+```
+
+#### **Checkbox**
+
+```tsx
+import { Checkbox } from "@/shared/ui/checkbox"
+
+<Checkbox id="terms" />
+<Label htmlFor="terms">Accept terms</Label>
+```
+
+#### **Radio Group**
+
+```tsx
+import { RadioGroup, RadioGroupItem } from "@/shared/ui/radio-group";
+
+<RadioGroup defaultValue="option-one">
+  <div className="flex items-center space-x-2">
+    <RadioGroupItem value="option-one" id="option-one" />
+    <Label htmlFor="option-one">Option One</Label>
+  </div>
+</RadioGroup>;
+```
+
+#### **Switch**
+
+```tsx
+import { Switch } from "@/shared/ui/switch";
+
+<Switch />;
+```
+
+#### **Slider**
+
+```tsx
+import { Slider } from "@/shared/ui/slider";
+
+<Slider defaultValue={[50]} max={100} step={1} />;
+```
+
+#### **Calendar**
+
+```tsx
+import { Calendar } from "@/shared/ui/calendar";
+
+<Calendar mode="single" selected={date} onSelect={setDate} />;
+```
+
+#### **Date Picker**
+
+```tsx
+import { DatePicker } from "@/shared/ui/date-picker";
+```
+
+#### **Label**
+
+```tsx
+import { Label } from "@/shared/ui/label";
+
+<Label htmlFor="email">Email</Label>;
+```
+
+#### **Field**
+
+```tsx
+import { Field } from "@/shared/ui/field";
+```
+
+### Overlays & Modals
+
+#### **Dialog**
+
+```tsx
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/shared/ui/dialog";
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button>Open Dialog</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Dialog Title</DialogTitle>
+      <DialogDescription>Dialog description</DialogDescription>
+    </DialogHeader>
+  </DialogContent>
+</Dialog>;
+```
+
+#### **Alert Dialog**
+
+```tsx
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/shared/ui/alert-dialog";
+```
+
+#### **Sheet**
+
+```tsx
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/shared/ui/sheet";
+
+<Sheet>
+  <SheetTrigger>Open</SheetTrigger>
+  <SheetContent>
+    <SheetHeader>
+      <SheetTitle>Title</SheetTitle>
+      <SheetDescription>Description</SheetDescription>
+    </SheetHeader>
+  </SheetContent>
+</Sheet>;
+```
+
+#### **Drawer**
+
+```tsx
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/shared/ui/drawer";
+```
+
+#### **Popover**
+
+```tsx
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
+
+<Popover>
+  <PopoverTrigger>Open</PopoverTrigger>
+  <PopoverContent>Content</PopoverContent>
+</Popover>;
+```
+
+#### **Tooltip**
+
+```tsx
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/ui/tooltip";
+
+<TooltipProvider>
+  <Tooltip>
+    <TooltipTrigger>Hover</TooltipTrigger>
+    <TooltipContent>
+      <p>Tooltip content</p>
+    </TooltipContent>
+  </Tooltip>
+</TooltipProvider>;
+```
+
+#### **Hover Card**
+
+```tsx
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/shared/ui/hover-card";
+```
+
+#### **Context Menu**
+
+```tsx
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/shared/ui/context-menu";
+
+<ContextMenu>
+  <ContextMenuTrigger>Right click</ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem>Item 1</ContextMenuItem>
+    <ContextMenuItem>Item 2</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>;
+```
+
+#### **Dropdown Menu**
+
+```tsx
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/ui/dropdown-menu";
+
+<DropdownMenu>
+  <DropdownMenuTrigger>Open</DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem>Profile</DropdownMenuItem>
+    <DropdownMenuItem>Settings</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>;
+```
+
+### Feedback & Status
+
+#### **Alert**
+
+```tsx
+import { Alert, AlertDescription, AlertTitle } from "@/shared/ui/alert"
+
+<Alert>
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>Alert description</AlertDescription>
+</Alert>
+
+<Alert variant="destructive">
+  <AlertTitle>Error</AlertTitle>
+  <AlertDescription>Error description</AlertDescription>
+</Alert>
+```
+
+#### **Toast**
+
+```tsx
+import { useToast } from "@/shared/ui/use-toast";
+import { ToastAction } from "@/shared/ui/toast";
+
+const { toast } = useToast();
+
+toast({
+  title: "Scheduled: Catch up",
+  description: "Friday, February 10, 2023 at 5:57 PM",
+  action: <ToastAction altText="Try again">Try again</ToastAction>,
+});
+```
+
+#### **Sonner**
+
+```tsx
+import { toast } from "sonner";
+
+toast.success("Success message");
+toast.error("Error message");
+toast.warning("Warning message");
+toast.info("Info message");
+```
+
+#### **Progress**
+
+```tsx
+import { Progress } from "@/shared/ui/progress";
+
+<Progress value={33} />;
+```
+
+#### **Spinner**
+
+```tsx
+import { Spinner } from "@/shared/ui/spinner"
+
+<Spinner />
+<Spinner size="sm" />
+<Spinner size="lg" />
+```
+
+#### **Skeleton**
+
+```tsx
+import { Skeleton } from "@/shared/ui/skeleton";
+
+<Skeleton className="w-[100px] h-[20px] rounded-full" />;
+```
+
+#### **Badge**
+
+```tsx
+import { Badge } from "@/shared/ui/badge"
+
+<Badge>Default</Badge>
+<Badge variant="secondary">Secondary</Badge>
+<Badge variant="destructive">Destructive</Badge>
+<Badge variant="outline">Outline</Badge>
+```
+
+#### **Empty**
+
+```tsx
+import { Empty } from "@/shared/ui/empty";
+
+<Empty description="No data available" />;
+```
+
+### Data Display
+
+#### **Table**
+
+```tsx
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/ui/table";
+
+<Table>
+  <TableCaption>A list of items</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Name</TableHead>
+      <TableHead>Status</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    <TableRow>
+      <TableCell>Item 1</TableCell>
+      <TableCell>Active</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>;
+```
+
+#### **Data Table**
+
+```tsx
+import { DataTable } from "@/shared/ui/data-table";
+```
+
+#### **Chart**
+
+```tsx
+import { Chart } from "@/shared/ui/chart";
+```
+
+#### **Carousel**
+
+```tsx
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/shared/ui/carousel";
+
+<Carousel>
+  <CarouselContent>
+    <CarouselItem>Item 1</CarouselItem>
+    <CarouselItem>Item 2</CarouselItem>
+  </CarouselContent>
+  <CarouselPrevious />
+  <CarouselNext />
+</Carousel>;
+```
+
+#### **Avatar**
+
+```tsx
+import { Avatar, AvatarFallback, AvatarImage } from "@/shared/ui/avatar";
+
+<Avatar>
+  <AvatarImage src="https://..." alt="@username" />
+  <AvatarFallback>CN</AvatarFallback>
+</Avatar>;
+```
+
+### Organization
+
+#### **Tabs**
+
+```tsx
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
+
+<Tabs defaultValue="account">
+  <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">Account content</TabsContent>
+  <TabsContent value="password">Password content</TabsContent>
+</Tabs>;
+```
+
+#### **Accordion**
+
+```tsx
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/shared/ui/accordion";
+
+<Accordion type="single" collapsible>
+  <AccordionItem value="item-1">
+    <AccordionTrigger>Is it accessible?</AccordionTrigger>
+    <AccordionContent>
+      Yes. It adheres to the WAI-ARIA design pattern.
+    </AccordionContent>
+  </AccordionItem>
+</Accordion>;
+```
+
+#### **Collapsible**
+
+```tsx
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/shared/ui/collapsible";
+```
+
+#### **Command**
+
+```tsx
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/shared/ui/command";
+```
+
+### Utility
+
+#### **Typography**
+
+```tsx
+import { Typography } from "@/shared/ui/typography";
+```
+
+#### **Kbd**
+
+```tsx
+import { Kbd } from "@/shared/ui/kbd";
+
+<Kbd>Ctrl</Kbd> + <Kbd>C</Kbd>;
+```
+
+#### **Item**
+
+```tsx
+import { Item } from "@/shared/ui/item";
+```
+
+## Complete Component List
+
+All available components from [shadcn/ui](https://ui.shadcn.com/docs/components):
+
+- Accordion
+- Alert
+- Alert Dialog
+- Aspect Ratio
+- Avatar
+- Badge
+- Breadcrumb
+- Button
+- Button Group
+- Calendar
+- Card
+- Carousel
+- Chart
+- Checkbox
+- Collapsible
+- Combobox
+- Command
+- Context Menu
+- Data Table
+- Date Picker
+- Dialog
+- Drawer
+- Dropdown Menu
+- Empty
+- Field
+- Form
+- Hover Card
+- Input
+- Input Group
+- Input OTP
+- Item
+- Kbd
+- Label
+- Menubar
+- Native Select
+- Navigation Menu
+- Pagination
+- Popover
+- Progress
+- Radio Group
+- Resizable
+- Scroll Area
+- Select
+- Separator
+- Sheet
+- Sidebar
+- Skeleton
+- Slider
+- Sonner
+- Spinner
+- Switch
+- Table
+- Tabs
+- Textarea
+- Toast
+- Toggle
+- Toggle Group
+- Tooltip
+- Typography
+
+## Best Practices
+
+### Use Composition
+
+Shadcn components are designed to be composed together:
+
+```tsx
+<Card>
+  <CardHeader>
+    <div className="flex items-center justify-between">
+      <CardTitle>Users</CardTitle>
+      <Button size="sm">
+        <Plus className="mr-2 h-4 w-4" />
+        Add User
+      </Button>
+    </div>
+  </CardHeader>
+  <CardContent>
+    <Table>{/* Table content */}</Table>
+  </CardContent>
+</Card>
+```
+
+### Customize with Tailwind
+
+All components accept `className` for customization:
+
+```tsx
+<Button className="w-full bg-linear-to-r from-purple-500 to-pink-500">
+  Gradient Button
+</Button>
+```
+
+### Form Handling
+
+Use with React Hook Form for type-safe forms:
+
+```tsx
+import { useForm } from "react-hook-form"
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/shared/ui/form"
+
+const form = useForm()
+
+<Form {...form}>
+  <FormField
+    control={form.control}
+    name="username"
+    render={({ field }) => (
+      <FormItem>
+        <FormLabel>Username</FormLabel>
+        <FormControl>
+          <Input {...field} />
+        </FormControl>
+      </FormItem>
+    )}
+  />
+</Form>
+```
+
+### Accessibility
+
+All components are built with accessibility in mind:
+
+- ARIA attributes included
+- Keyboard navigation supported
+- Screen reader friendly
+- Focus management
+
+## Resources
+
+- [Official Documentation](https://ui.shadcn.com/docs)
+- [Component Examples](https://ui.shadcn.com/docs/components)
+- [GitHub Repository](https://github.com/shadcn-ui/ui)
+- [Radix UI Primitives](https://www.radix-ui.com/primitives)

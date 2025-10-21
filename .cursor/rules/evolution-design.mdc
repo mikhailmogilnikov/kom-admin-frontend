@@ -1,0 +1,573 @@
+---
+alwaysApply: false
+applyIntelligently: |
+  Apply this rule when:
+  - Creating or refactoring features/ modules and their structure
+  - Creating or refactoring services/ modules
+  - Organizing shared/ components, utilities, or types
+  - Setting up module structure (choosing between Single File, Flat, Grouped, or Compose patterns)
+  - Creating public APIs (index.ts files) for modules
+  - Checking import dependencies between layers (app → features → services → shared)
+  - Composing features together in app/ layer
+  - Deciding where to place new code (which layer and module)
+  - Resolving circular dependencies or cross-layer imports
+  - Migrating existing code to ED architecture
+  - Creating new UI components (deciding between shared/ui vs feature-specific)
+  - Setting up API clients or business logic (services vs features)
+  - Organizing complex modules with submodules or compose patterns
+
+  Do NOT apply when:
+  - Working with configuration files (vite.config, tsconfig, etc.)
+  - Setting up development tools or build scripts
+  - Writing unit tests or test utilities
+  - Working with third-party library integrations that don't fit the architecture
+  - Making small fixes to existing code that already follows the pattern
+  - Working with route definitions in routes/ (handled by router architecture)
+---
+
+# Evolution Design (ED) Architecture
+
+The project uses **Evolution Design (ED Small)** architecture for organizing frontend code.
+
+## Core Principles
+
+### Layered Architecture
+
+Code is organized into 4 main layers with **unidirectional dependencies** (imports only go down):
+
+```
+app/ ─────┐
+          ↓
+features/ ┼─────┐
+          ↓     ↓
+services/ ──────┼─────┐
+                ↓     ↓
+shared/   ──────┴─────┘
+```
+
+### 1. `app/` Layer
+
+**Purpose:** Application entry point, global configuration, features composition
+
+**May contain:**
+
+- `main.tsx` - application entry point
+- `app.tsx` - root component
+- `router.tsx` - routing configuration
+- `providers.tsx` - global providers
+- `global.css` - global styles
+- Composition of features into a single application
+
+**Rules:**
+
+- Most frequently changing logic
+- Can import from all layers
+- Structure is not standardized
+- Minimum business logic
+
+**Examples:**
+
+```tsx
+// ✅ Good: features composition
+import { AuthProvider } from "@/features/auth";
+import { TaskList } from "@/features/task-list";
+
+export function App() {
+  return (
+    <AuthProvider>
+      <TaskList />
+    </AuthProvider>
+  );
+}
+
+// ❌ Bad: business logic in app
+export function App() {
+  const [tasks, setTasks] = useState([]);
+  // task management logic should be in features
+}
+```
+
+### 2. `features/` Layer
+
+**Purpose:** Large independent pieces of application functionality
+
+**Module structure:**
+
+```
+features/
+  ├── auth/              # feature module
+  ├── task-list/         # feature module
+  └── user-profile/      # feature module
+```
+
+**Rules:**
+
+- Each folder = **large independent feature**
+- Features do NOT depend on each other directly
+- Most of the application code should be here
+- Can import: `services/`, `shared/`
+- CANNOT import: other `features/`, `app/`
+
+**Tip:** Don't make features too small! It's normal to have 3-4 features at the start.
+
+**Examples:**
+
+```tsx
+// ✅ Good: independent feature
+// features/task-list/task-list.tsx
+import { useTaskApi } from "@/services/tasks";
+import { Button } from "@/shared/ui/button";
+
+export function TaskList() {
+  const { tasks } = useTaskApi();
+  return <div>{/* ... */}</div>;
+}
+
+// ❌ Bad: dependency between features
+// features/task-list/task-list.tsx
+import { UserProfile } from "@/features/user-profile"; // ❌
+```
+
+### 3. `services/` Layer
+
+**Purpose:** Reusable business logic not tied to a specific feature
+
+**May contain:**
+
+- API clients
+- Business logic used across different features
+- External services integration
+- Stores (if using state management)
+
+**Rules:**
+
+- Services do NOT depend on each other
+- Can import: `shared/`
+- CANNOT import: `features/`, `app/`, other `services/`
+
+**Examples:**
+
+```tsx
+// ✅ Good: reusable API
+// services/tasks/api.ts
+import { apiClient } from "@/shared/api/client";
+
+export const tasksApi = {
+  getAll: () => apiClient.get("/tasks"),
+  create: (data) => apiClient.post("/tasks", data),
+};
+
+// ❌ Bad: dependency between services
+// services/tasks/api.ts
+import { userApi } from "@/services/user"; // ❌
+```
+
+### 4. `shared/` Layer
+
+**Purpose:** Common reusable code
+
+**May contain:**
+
+- UI components (Button, Input, Card)
+- Utilities (date formatting, validation)
+- Hooks (useLocalStorage, useDebounce)
+- Types and constants
+- API client
+- **Can contain business logic** (unlike FSD)
+
+**Structure:**
+
+```
+shared/
+  ├── ui/           # UI components
+  ├── lib/          # utilities and helpers
+  ├── api/          # base API client
+  ├── types/        # common types
+  └── config/       # configuration
+```
+
+**Rules:**
+
+- CANNOT import anything from other layers
+- Completely independent code
+
+## Module Structure Evolution
+
+### Stage 1: Single File Module
+
+**When to use:** Module < 100 lines, all logic in one file
+
+```
+features/
+  └── simple-feature.tsx
+```
+
+**Example:**
+
+```tsx
+// features/counter.tsx
+import { useState } from "react";
+
+export function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <span>{count}</span>
+      <button onClick={() => setCount(count + 1)}>+</button>
+    </div>
+  );
+}
+```
+
+### Stage 2: Flat Module
+
+**When to use:** Module 100-300 lines, need file separation
+
+```
+features/
+  └── todo-list/
+      ├── index.ts         # public API
+      ├── api.ts          # API requests
+      ├── todo-list.tsx   # main component
+      ├── todo-item.tsx   # helper component
+      └── use-todos.ts    # hooks
+```
+
+**Rules:**
+
+- Export only through `index.ts`
+- Files at the same level can import each other
+
+**Example:**
+
+```tsx
+// features/todo-list/index.ts
+export { TodoList } from "./todo-list";
+export type { Todo } from "./types";
+
+// Everything else is internal implementation
+```
+
+### Stage 3: Grouped Module
+
+**When to use:** Module > 300 lines, many files with different purposes
+
+```
+features/
+  └── todo-list/
+      ├── index.ts
+      ├── api.ts
+      ├── ui/                 # UI components
+      │   ├── todo-list.tsx
+      │   ├── todo-item.tsx
+      │   └── create-form.tsx
+      ├── model/              # Logic and state
+      │   ├── use-todos.ts
+      │   └── use-create-todo.ts
+      └── domain/             # Types and business logic
+          └── todo.ts
+```
+
+**Standard groups:**
+
+- `ui/` - components
+- `model/` - hooks, stores, business logic
+- `api/` - API requests
+- `domain/` - types, constants, pure business logic
+- `lib/` - module utilities
+- `config/` - module configuration
+
+**Rules:**
+
+- Groups can import each other
+- Export only through root `index.ts`
+
+### Stage 4: Module with Compose
+
+**When to use:** Complex module with submodules and chaotic dependencies
+
+```
+features/
+  └── todo-list/
+      ├── index.ts
+      ├── api.ts
+      ├── compose/              # Mediators - connect parts
+      │   ├── todo-list-page.tsx
+      │   └── todo-details-page.tsx
+      ├── domain/
+      │   └── todo-item.ts
+      ├── model/                # Independent hooks
+      │   ├── use-todo-list.ts
+      │   ├── use-create-todo.ts
+      │   └── use-delete-todo.ts
+      └── ui/                   # Independent components
+          ├── todo-item.tsx
+          ├── create-form.tsx
+          └── fields/
+              ├── text-field.tsx
+              └── date-field.tsx
+```
+
+**Key principles:**
+
+- `model/` and `ui/` do NOT depend on each other
+- Connection happens in `compose/` through:
+  - Slots and render-props for UI
+  - Events and DI for model
+- Files in `compose/` can import each other
+
+**Example:**
+
+```tsx
+// compose/todo-list-page.tsx - mediator
+export function TodoListPage() {
+  const todoList = useTodoList();
+  const createTodo = useCreateTodo();
+  const deleteTodo = useDeleteTodo();
+
+  return (
+    <TodoPageLayout
+      createForm={<CreateForm onCreate={createTodo} />}
+      items={todoList.map((item) => (
+        <TodoItem
+          key={item.id}
+          item={item}
+          onDelete={() => deleteTodo(item.id)}
+        />
+      ))}
+    />
+  );
+}
+```
+
+### Submodules
+
+You can create nested modules:
+
+```
+features/
+  └── todo-list/
+      ├── index.ts
+      ├── api.ts
+      ├── todo-list/        # submodule
+      │   ├── index.ts
+      │   └── ...
+      └── todo-details/     # submodule
+          ├── index.ts
+          └── ...
+```
+
+**Rules:**
+
+- Submodules can import from parent module
+- Submodules should NOT import each other directly
+- Connection through parent's compose
+
+## Public API (index.ts)
+
+**Must use for:**
+
+- Modules in `features/`
+- Modules in `services/`
+- Grouped parts of `shared/`
+
+**Example:**
+
+```tsx
+// features/auth/index.ts
+export { LoginForm } from "./ui/login-form";
+export { useAuth } from "./model/use-auth";
+export type { User } from "./domain/user";
+
+// Do not export internal details:
+// - helper components
+// - internal hooks
+// - module utilities
+```
+
+## Import Rules
+
+### ✅ Allowed:
+
+```tsx
+// app can import from any layer
+import { TaskList } from "@/features/task-list";
+import { tasksApi } from "@/services/tasks";
+import { Button } from "@/shared/ui/button";
+
+// features can import services and shared
+import { userApi } from "@/services/user";
+import { formatDate } from "@/shared/lib/dates";
+
+// services can import only shared
+import { apiClient } from "@/shared/api/client";
+
+// shared does not import other layers
+```
+
+### ❌ Forbidden:
+
+```tsx
+// features CANNOT import other features
+import { UserProfile } from "@/features/user-profile"; // ❌
+
+// features CANNOT import app
+import { router } from "@/app/router"; // ❌
+
+// services CANNOT import features
+import { TaskList } from "@/features/task-list"; // ❌
+
+// services CANNOT import other services
+import { userApi } from "@/services/user"; // ❌
+
+// services CANNOT import app
+import { config } from "@/app/config"; // ❌
+
+// shared CANNOT import anything
+import { useAuth } from "@/features/auth"; // ❌
+```
+
+## Feature Interaction
+
+If features need to interact, use:
+
+**1. Composition in app:**
+
+```tsx
+// app/app.tsx
+import { Auth } from "@/features/auth";
+import { TaskList } from "@/features/task-list";
+
+export function App() {
+  return <Auth>{(user) => <TaskList userId={user.id} />}</Auth>;
+}
+```
+
+**2. Shared service:**
+
+```tsx
+// services/user/store.ts
+export const userStore = create((set) => ({
+  user: null,
+  setUser: (user) => set({ user }),
+}));
+
+// features/auth uses it
+import { userStore } from "@/services/user";
+
+// features/task-list uses it
+import { userStore } from "@/services/user";
+```
+
+**3. Events through shared:**
+
+```tsx
+// shared/lib/events.ts
+export const events = {
+  userLoggedIn: createEvent<User>(),
+};
+
+// features/auth emits
+import { events } from "@/shared/lib/events";
+events.userLoggedIn.emit(user);
+
+// features/notifications listens
+import { events } from "@/shared/lib/events";
+events.userLoggedIn.subscribe((user) => {
+  showNotification(`Welcome ${user.name}`);
+});
+```
+
+## Naming Recommendations
+
+### Features:
+
+- `auth` - authentication
+- `task-list` - task list
+- `user-profile` - user profile
+- Use kebab-case
+- Reflect functionality, not implementation
+
+### Services:
+
+- `api` - API client
+- `tasks` - task operations
+- `users` - user operations
+- `storage` - storage operations
+
+### Shared:
+
+- `ui/` - interface components
+- `lib/` - utilities
+- `api/` - base API
+- `types/` - types
+- `config/` - configuration
+
+## Checklist
+
+When creating/modifying code, check:
+
+- [ ] Code is in the correct layer
+- [ ] Imports only go down through layers
+- [ ] Features don't depend on each other
+- [ ] Services don't depend on each other
+- [ ] Public API defined through index.ts
+- [ ] Appropriate module structure chosen (stages 1-4)
+- [ ] No business logic in app
+- [ ] No circular dependencies
+
+## Common Mistakes
+
+### ❌ Small features
+
+```
+features/
+  ├── button/          # too small
+  ├── input/           # too small
+  ├── form-field/      # too small
+```
+
+**✅ Correct:** This should be in `shared/ui/`
+
+### ❌ Dependencies between features
+
+```tsx
+// features/task-list/task-list.tsx
+import { UserAvatar } from "@/features/user-profile"; // ❌
+```
+
+**✅ Correct:**
+
+- Move UserAvatar to `shared/ui/`
+- Or pass through props from `app`
+
+### ❌ Too early transition to groups
+
+```
+features/
+  └── simple-counter/    # 50 lines of code
+      ├── index.ts
+      ├── ui/
+      │   └── counter.tsx
+      ├── model/
+      │   └── use-counter.ts
+      └── domain/
+          └── types.ts
+```
+
+**✅ Correct:** Use Flat Module or even Single File
+
+## Migrating Existing Code
+
+1. Identify current features in the application
+2. Create folders in `features/`
+3. Move code gradually, starting with the most independent parts
+4. Extract common code to `shared/`
+5. Create `services/` for reusable business logic
+6. Simplify `app/` to composition only
+
+## Useful Links
+
+- [ED Documentation](https://ed.evocomm.space/guide/)
+- [ED Small Guide](https://ed.evocomm.space/guide/ed-small/)
+- [Deep Dive](https://ed.evocomm.space/deep-dive/)
