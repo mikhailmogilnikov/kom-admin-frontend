@@ -1,12 +1,12 @@
-@layer base {
+/* @layer base {
   :root {
     --scrollbar-width: 0.6rem;
 
     --scrollbar-track-background: var(--background);
     --scrollbar-thumb-background: var(--foreground);
-    --scrollbar-thumb-hover-background: var(--foreground-secondary);
+    --scrollbar-thumb-hover-background: var(--card);
 
-    --scrollbar-border-radius: calc(var(--scrollbar-width) / 2);
+    --scrollbar-border-radius: var(--scrollbar-width);
   }
 }
 
@@ -93,4 +93,4 @@
 
 ::-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover-background);
-}
+} */

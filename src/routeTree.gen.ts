@@ -13,6 +13,9 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as PrivateRouteRouteImport } from './routes/_private/route'
 import { Route as PrivateIndexRouteImport } from './routes/_private/index'
 import { Route as PublicLoginRouteImport } from './routes/_public/login'
+import { Route as PrivateUsersRouteImport } from './routes/_private/users'
+import { Route as PrivateRequestsRouteImport } from './routes/_private/requests'
+import { Route as PrivateObjectsRouteImport } from './routes/_private/objects'
 
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
@@ -32,12 +35,33 @@ const PublicLoginRoute = PublicLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PrivateUsersRoute = PrivateUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => PrivateRouteRoute,
+} as any)
+const PrivateRequestsRoute = PrivateRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => PrivateRouteRoute,
+} as any)
+const PrivateObjectsRoute = PrivateObjectsRouteImport.update({
+  id: '/objects',
+  path: '/objects',
+  getParentRoute: () => PrivateRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/objects': typeof PrivateObjectsRoute
+  '/requests': typeof PrivateRequestsRoute
+  '/users': typeof PrivateUsersRoute
   '/login': typeof PublicLoginRoute
   '/': typeof PrivateIndexRoute
 }
 export interface FileRoutesByTo {
+  '/objects': typeof PrivateObjectsRoute
+  '/requests': typeof PrivateRequestsRoute
+  '/users': typeof PrivateUsersRoute
   '/login': typeof PublicLoginRoute
   '/': typeof PrivateIndexRoute
 }
@@ -45,15 +69,26 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_private': typeof PrivateRouteRouteWithChildren
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_private/objects': typeof PrivateObjectsRoute
+  '/_private/requests': typeof PrivateRequestsRoute
+  '/_private/users': typeof PrivateUsersRoute
   '/_public/login': typeof PublicLoginRoute
   '/_private/': typeof PrivateIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/'
+  fullPaths: '/objects' | '/requests' | '/users' | '/login' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_private' | '/_public' | '/_public/login' | '/_private/'
+  to: '/objects' | '/requests' | '/users' | '/login' | '/'
+  id:
+    | '__root__'
+    | '/_private'
+    | '/_public'
+    | '/_private/objects'
+    | '/_private/requests'
+    | '/_private/users'
+    | '/_public/login'
+    | '/_private/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,14 +126,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicLoginRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_private/users': {
+      id: '/_private/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof PrivateUsersRouteImport
+      parentRoute: typeof PrivateRouteRoute
+    }
+    '/_private/requests': {
+      id: '/_private/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof PrivateRequestsRouteImport
+      parentRoute: typeof PrivateRouteRoute
+    }
+    '/_private/objects': {
+      id: '/_private/objects'
+      path: '/objects'
+      fullPath: '/objects'
+      preLoaderRoute: typeof PrivateObjectsRouteImport
+      parentRoute: typeof PrivateRouteRoute
+    }
   }
 }
 
 interface PrivateRouteRouteChildren {
+  PrivateObjectsRoute: typeof PrivateObjectsRoute
+  PrivateRequestsRoute: typeof PrivateRequestsRoute
+  PrivateUsersRoute: typeof PrivateUsersRoute
   PrivateIndexRoute: typeof PrivateIndexRoute
 }
 
 const PrivateRouteRouteChildren: PrivateRouteRouteChildren = {
+  PrivateObjectsRoute: PrivateObjectsRoute,
+  PrivateRequestsRoute: PrivateRequestsRoute,
+  PrivateUsersRoute: PrivateUsersRoute,
   PrivateIndexRoute: PrivateIndexRoute,
 }
 

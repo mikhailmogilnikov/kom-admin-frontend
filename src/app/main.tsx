@@ -8,7 +8,6 @@ import { routeTree } from "../routeTree.gen";
 
 const router = createRouter({ routeTree });
 
-// Регистрируем роутер для type safety
 declare module "@tanstack/react-router" {
   // biome-ignore lint/nursery/useConsistentTypeDefinitions: biome does not support this
   interface Register {
