@@ -1,0 +1,96 @@
+@layer base {
+  :root {
+    --scrollbar-width: 0.6rem;
+
+    --scrollbar-track-background: var(--background);
+    --scrollbar-thumb-background: var(--foreground);
+    --scrollbar-thumb-hover-background: var(--foreground-secondary);
+
+    --scrollbar-border-radius: calc(var(--scrollbar-width) / 2);
+  }
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-border-radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-background);
+}
+
+::-moz-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-moz-scrollbar-track {
+  background: var(--scrollbar-track-background);
+}
+
+::-moz-scrollbar-thumb {
+  background: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-border-radius);
+}
+
+::-moz-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-background);
+}
+
+::-ms-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-ms-scrollbar-track {
+  background: var(--scrollbar-track-background);
+}
+
+::-ms-scrollbar-thumb {
+  background: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-border-radius);
+}
+
+::-ms-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-background);
+}
+
+::-o-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-o-scrollbar-track {
+  background: var(--scrollbar-track-background);
+}
+
+::-o-scrollbar-thumb {
+  background: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-border-radius);
+}
+
+::-o-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-background);
+}
+
+::-scrollbar {
+  width: var(--scrollbar-width);
+}
+
+::-scrollbar-track {
+  background: var(--scrollbar-track-background);
+}
+
+::-scrollbar-thumb {
+  background: var(--scrollbar-thumb-background);
+  border-radius: var(--scrollbar-border-radius);
+}
+
+::-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover-background);
+}

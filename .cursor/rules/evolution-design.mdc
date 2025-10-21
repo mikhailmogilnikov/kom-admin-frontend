@@ -6,7 +6,7 @@ applyIntelligently: |
   - Creating or refactoring services/ modules
   - Organizing shared/ components, utilities, or types
   - Setting up module structure (choosing between Single File, Flat, Grouped, or Compose patterns)
-  - Creating public APIs (index.ts files) for modules
+  - Setting up direct imports from specific files (avoiding barrel files)
   - Checking import dependencies between layers (app → features → services → shared)
   - Composing features together in app/ layer
   - Deciding where to place new code (which layer and module)
@@ -68,9 +68,9 @@ shared/   ──────┴─────┘
 **Examples:**
 
 ```tsx
-// ✅ Good: features composition
-import { AuthProvider } from "@/features/auth";
-import { TaskList } from "@/features/task-list";
+// ✅ Good: features composition with direct imports
+import { AuthProvider } from "@/features/auth/ui/auth-provider";
+import { TaskList } from "@/features/task-list/ui/task-list";
 
 export function App() {
   return (
@@ -226,7 +226,6 @@ export function Counter() {
 ```
 features/
   └── todo-list/
-      ├── index.ts         # public API
       ├── api.ts          # API requests
       ├── todo-list.tsx   # main component
       ├── todo-item.tsx   # helper component
@@ -235,17 +234,16 @@ features/
 
 **Rules:**
 
-- Export only through `index.ts`
+- Export directly from files (no index.ts barrel file)
 - Files at the same level can import each other
+- Use direct imports from specific files
 
 **Example:**
 
 ```tsx
-// features/todo-list/index.ts
-export { TodoList } from "./todo-list";
-export type { Todo } from "./types";
-
-// Everything else is internal implementation
+// Import directly from specific files
+import { TodoList } from "@/features/todo-list/todo-list";
+import type { Todo } from "@/features/todo-list/types";
 ```
 
 ### Stage 3: Grouped Module
@@ -255,8 +253,8 @@ export type { Todo } from "./types";
 ```
 features/
   └── todo-list/
-      ├── index.ts
-      ├── api.ts
+      ├── api/
+      │   └── todos-api.ts
       ├── ui/                 # UI components
       │   ├── todo-list.tsx
       │   ├── todo-item.tsx
@@ -280,7 +278,17 @@ features/
 **Rules:**
 
 - Groups can import each other
-- Export only through root `index.ts`
+- Export directly from specific files (no index.ts)
+- Use direct imports from files within groups
+
+**Example:**
+
+```tsx
+// Import directly from specific files in groups
+import { TodoList } from "@/features/todo-list/ui/todo-list";
+import { useTodos } from "@/features/todo-list/model/use-todos";
+import type { Todo } from "@/features/todo-list/domain/todo";
+```
 
 ### Stage 4: Module with Compose
 
@@ -289,8 +297,8 @@ features/
 ```
 features/
   └── todo-list/
-      ├── index.ts
-      ├── api.ts
+      ├── api/
+      │   └── todos-api.ts
       ├── compose/              # Mediators - connect parts
       │   ├── todo-list-page.tsx
       │   └── todo-details-page.tsx
@@ -315,11 +323,18 @@ features/
   - Slots and render-props for UI
   - Events and DI for model
 - Files in `compose/` can import each other
+- No index.ts files - import directly from specific files
 
 **Example:**
 
 ```tsx
 // compose/todo-list-page.tsx - mediator
+import { useTodoList } from "../model/use-todo-list";
+import { useCreateTodo } from "../model/use-create-todo";
+import { useDeleteTodo } from "../model/use-delete-todo";
+import { TodoItem } from "../ui/todo-item";
+import { CreateForm } from "../ui/create-form";
+
 export function TodoListPage() {
   const todoList = useTodoList();
   const createTodo = useCreateTodo();
@@ -347,42 +362,59 @@ You can create nested modules:
 ```
 features/
   └── todo-list/
-      ├── index.ts
-      ├── api.ts
+      ├── api/
+      │   └── todos-api.ts
       ├── todo-list/        # submodule
-      │   ├── index.ts
       │   └── ...
       └── todo-details/     # submodule
-          ├── index.ts
           └── ...
 ```
 
 **Rules:**
 
-- Submodules can import from parent module
+- Submodules can import from parent module using relative paths
 - Submodules should NOT import each other directly
 - Connection through parent's compose
+- No index.ts files - use direct imports
 
-## Public API (index.ts)
+## Public API and Imports
 
-**Must use for:**
+**❌ AVOID barrel files (index.ts):**
 
-- Modules in `features/`
-- Modules in `services/`
-- Grouped parts of `shared/`
+Barrel files slow down performance and cause large module graphs. Instead, import directly from specific files.
 
-**Example:**
+**✅ Use direct imports:**
 
 ```tsx
-// features/auth/index.ts
-export { LoginForm } from "./ui/login-form";
-export { useAuth } from "./model/use-auth";
-export type { User } from "./domain/user";
+// ✅ Good: direct import from specific file
+import { LoginForm } from "@/features/auth/ui/login-form";
+import { useAuth } from "@/features/auth/model/use-auth";
+import type { User } from "@/features/auth/domain/user";
 
-// Do not export internal details:
-// - helper components
-// - internal hooks
-// - module utilities
+// ❌ Bad: using barrel file
+import { LoginForm, useAuth, User } from "@/features/auth";
+```
+
+**File organization:**
+
+- Each module should have clear structure with specific files
+- Export what you need directly from files
+- No index.ts re-exports needed
+- Internal helpers, hooks, and utilities stay in their files
+
+**Example structure:**
+
+```
+features/
+  └── auth/
+      ├── ui/
+      │   ├── login-form.tsx    # export LoginForm component
+      │   └── logout-button.tsx # export LogoutButton component
+      ├── model/
+      │   ├── use-auth.ts       # export useAuth hook
+      │   └── auth-store.ts     # export authStore
+      └── domain/
+          └── user.ts           # export type User
 ```
 
 ## Import Rules
@@ -390,16 +422,16 @@ export type { User } from "./domain/user";
 ### ✅ Allowed:
 
 ```tsx
-// app can import from any layer
-import { TaskList } from "@/features/task-list";
-import { tasksApi } from "@/services/tasks";
+// app can import from any layer (direct imports)
+import { TaskList } from "@/features/task-list/ui/task-list";
+import { tasksApi } from "@/services/tasks/api/tasks-api";
 import { Button } from "@/shared/ui/button";
 
-// features can import services and shared
-import { userApi } from "@/services/user";
-import { formatDate } from "@/shared/lib/dates";
+// features can import services and shared (direct imports)
+import { userApi } from "@/services/user/api/user-api";
+import { formatDate } from "@/shared/lib/dates/format-date";
 
-// services can import only shared
+// services can import only shared (direct imports)
 import { apiClient } from "@/shared/api/client";
 
 // shared does not import other layers
@@ -409,22 +441,25 @@ import { apiClient } from "@/shared/api/client";
 
 ```tsx
 // features CANNOT import other features
-import { UserProfile } from "@/features/user-profile"; // ❌
+import { UserProfile } from "@/features/user-profile/ui/profile"; // ❌
 
 // features CANNOT import app
 import { router } from "@/app/router"; // ❌
 
 // services CANNOT import features
-import { TaskList } from "@/features/task-list"; // ❌
+import { TaskList } from "@/features/task-list/ui/task-list"; // ❌
 
 // services CANNOT import other services
-import { userApi } from "@/services/user"; // ❌
+import { userApi } from "@/services/user/api/user-api"; // ❌
 
 // services CANNOT import app
 import { config } from "@/app/config"; // ❌
 
 // shared CANNOT import anything
-import { useAuth } from "@/features/auth"; // ❌
+import { useAuth } from "@/features/auth/model/use-auth"; // ❌
+
+// DO NOT use barrel files (index.ts)
+import { LoginForm } from "@/features/auth"; // ❌
 ```
 
 ## Feature Interaction
@@ -435,8 +470,8 @@ If features need to interact, use:
 
 ```tsx
 // app/app.tsx
-import { Auth } from "@/features/auth";
-import { TaskList } from "@/features/task-list";
+import { Auth } from "@/features/auth/ui/auth";
+import { TaskList } from "@/features/task-list/ui/task-list";
 
 export function App() {
   return <Auth>{(user) => <TaskList userId={user.id} />}</Auth>;
@@ -446,17 +481,17 @@ export function App() {
 **2. Shared service:**
 
 ```tsx
-// services/user/store.ts
+// services/user/model/user-store.ts
 export const userStore = create((set) => ({
   user: null,
   setUser: (user) => set({ user }),
 }));
 
-// features/auth uses it
-import { userStore } from "@/services/user";
+// features/auth uses it (direct import)
+import { userStore } from "@/services/user/model/user-store";
 
-// features/task-list uses it
-import { userStore } from "@/services/user";
+// features/task-list uses it (direct import)
+import { userStore } from "@/services/user/model/user-store";
 ```
 
 **3. Events through shared:**
@@ -511,7 +546,7 @@ When creating/modifying code, check:
 - [ ] Imports only go down through layers
 - [ ] Features don't depend on each other
 - [ ] Services don't depend on each other
-- [ ] Public API defined through index.ts
+- [ ] Using direct imports from specific files (no index.ts barrel files)
 - [ ] Appropriate module structure chosen (stages 1-4)
 - [ ] No business logic in app
 - [ ] No circular dependencies
@@ -532,14 +567,19 @@ features/
 ### ❌ Dependencies between features
 
 ```tsx
-// features/task-list/task-list.tsx
-import { UserAvatar } from "@/features/user-profile"; // ❌
+// features/task-list/ui/task-list.tsx
+import { UserAvatar } from "@/features/user-profile/ui/avatar"; // ❌ Cross-feature import
 ```
 
 **✅ Correct:**
 
-- Move UserAvatar to `shared/ui/`
+- Move UserAvatar to `shared/ui/user-avatar.tsx`
 - Or pass through props from `app`
+
+```tsx
+// After moving to shared
+import { UserAvatar } from "@/shared/ui/user-avatar"; // ✅
+```
 
 ### ❌ Too early transition to groups
 

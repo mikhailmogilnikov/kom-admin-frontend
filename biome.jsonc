@@ -2,6 +2,18 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite"],
   "files": {
-    "includes": ["**/*", "!**/routeTree.gen.ts", "!src/app/globals.css"]
+    "includes": [
+      "**/*",
+      "!**/routeTree.gen.ts",
+      "!src/app/globals.css",
+      "!src/app/css/**/*.css"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "correctness": {
+        "noChildrenProp": "off"
+      }
+    }
   }
 }

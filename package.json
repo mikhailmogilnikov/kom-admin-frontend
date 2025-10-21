@@ -11,20 +11,26 @@
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-scroll-area": "^1.2.10",
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.15",
+    "@tanstack/react-form": "^1.23.7",
     "@tanstack/react-router": "^1.133.20",
     "@tanstack/react-router-devtools": "^1.133.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "create-gstore": "^0.2.0",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.546.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "recharts": "2.15.4",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4.1.15"
+    "tailwindcss": "^4.1.15",
+    "typed-local-store": "^2.0.2",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.6",

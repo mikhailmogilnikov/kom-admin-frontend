@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@import "./css/scrollbar.css";
+@import "./css/autofill.css";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
