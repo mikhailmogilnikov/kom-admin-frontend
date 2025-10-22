@@ -7,10 +7,15 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { ApartmentTypesChart } from "@/features/dashboard/ui/apartment-types-chart";
+import { ComparisonRadarChart } from "@/features/dashboard/ui/comparison-radar-chart";
 import { ComplexSelector } from "@/features/dashboard/ui/complex-selector";
 import { DateRangePicker } from "@/features/dashboard/ui/date-range-picker";
 import { MetricCard } from "@/features/dashboard/ui/metric-card";
 import { OccupancyChart } from "@/features/dashboard/ui/occupancy-chart";
+import { PaymentStatusChart } from "@/features/dashboard/ui/payment-status-chart";
+import { PaymentsDynamicChart } from "@/features/dashboard/ui/payments-dynamic-chart";
+import { RequestsDynamicChart } from "@/features/dashboard/ui/requests-dynamic-chart";
 import { RevenueChart } from "@/features/dashboard/ui/revenue-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
@@ -85,14 +90,14 @@ const DashboardComponent = () => {
 
   return (
     <div className="flex flex-col gap-6 p-6 max-md:px-4 max-md:py-8">
-      <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-        <div className="flex flex-col gap-2 max-md:w-full">
+      <div className="flex flex-col items-center justify-between gap-4 lg:flex-row">
+        <div className="flex flex-col gap-2 max-lg:w-full">
           <h1 className="font-bold text-3xl">Дашборд</h1>
           <p className="text-muted-foreground">
             УК "Ключи Москвы" - Управление недвижимостью
           </p>
         </div>
-        <div className="flex flex-col gap-4 max-md:mt-4 max-md:w-full md:flex-row">
+        <div className="flex flex-col gap-4 max-lg:mt-4 max-lg:w-full md:flex-row">
           <ComplexSelector onComplexChange={setSelectedComplex} />
           <DateRangePicker />
         </div>
@@ -106,7 +111,7 @@ const DashboardComponent = () => {
       </div>
 
       {/* Графики и детальная информация */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
         {/* Занятость */}
         <OccupancyChart selectedComplex={selectedComplex} />
 
@@ -155,35 +160,7 @@ const DashboardComponent = () => {
         </Card>
 
         {/* Распределение по типам квартир */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Распределение по типам</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[
-                { type: "1-комнатные", count: 18, percentage: 40 },
-                { type: "2-комнатные", count: 20, percentage: 44 },
-                { type: "3-комнатные", count: 7, percentage: 16 },
-              ].map((type) => (
-                <div className="space-y-2" key={type.type}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{type.type}</span>
-                    <span className="text-muted-foreground">
-                      {type.count} квартир ({type.percentage}%)
-                    </span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                    <div
-                      className="h-full bg-primary transition-all"
-                      style={{ width: `${type.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <ApartmentTypesChart selectedComplex={selectedComplex} />
 
         {/* Финансовая статистика */}
         <Card>
@@ -219,10 +196,13 @@ const DashboardComponent = () => {
             </div>
           </CardContent>
         </Card>
-      </div>
 
-      {/* График финансовой динамики на всю ширину */}
-      <RevenueChart selectedComplex={selectedComplex} />
+        <RevenueChart selectedComplex={selectedComplex} />
+        <PaymentsDynamicChart selectedComplex={selectedComplex} />
+        <RequestsDynamicChart selectedComplex={selectedComplex} />
+        <PaymentStatusChart selectedComplex={selectedComplex} />
+        <ComparisonRadarChart selectedComplex={selectedComplex} />
+      </div>
     </div>
   );
 };

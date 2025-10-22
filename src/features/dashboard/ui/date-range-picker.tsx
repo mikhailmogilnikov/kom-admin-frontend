@@ -46,7 +46,7 @@ export const DateRangePicker = ({ onDateChange }: DateRangePickerProps) => {
       <Popover onOpenChange={setOpen} open={open}>
         <PopoverTrigger asChild>
           <Button
-            className="w-[280px] justify-start font-normal max-md:w-full"
+            className="w-70 justify-start bg-card font-normal shadow-lg hover:bg-card/90 max-md:w-full"
             id="date-range"
             variant="outline"
           >

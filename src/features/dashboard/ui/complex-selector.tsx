@@ -47,7 +47,7 @@ export const ComplexSelector = ({ onComplexChange }: ComplexSelectorProps) => {
         <PopoverTrigger asChild>
           <Button
             aria-expanded={open}
-            className="w-[280px] justify-between font-normal max-md:w-full"
+            className="w-70 justify-between bg-card font-normal shadow-lg hover:bg-card/90 max-md:w-full"
             id="complex-selector"
             role="combobox"
             variant="outline"
@@ -67,6 +67,7 @@ export const ComplexSelector = ({ onComplexChange }: ComplexSelectorProps) => {
                 {COMPLEXES.map((complex) => (
                   <CommandItem
                     key={complex.value}
+                    keywords={[complex.label]}
                     onSelect={() => handleSelect(complex.value)}
                     value={complex.value}
                   >
