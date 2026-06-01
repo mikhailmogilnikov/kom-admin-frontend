@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import Logo from "@/shared/assets/icons/kom-logo.svg?react";
-import { Tabs } from "./tabs";
 import { User } from "./user";
 
 export const Header = () => (
@@ -14,7 +13,7 @@ export const Header = () => (
           <Logo className="h-8 fill-white" />
         </Link>
 
-        <Tabs />
+        {/* <Tabs /> */}
       </div>
       <div className="flex items-center gap-4">
         <User />

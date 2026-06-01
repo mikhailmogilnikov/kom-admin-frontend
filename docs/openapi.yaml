@@ -1,0 +1,745 @@
+openapi: 3.1.0
+info:
+  title: KOM Admin API
+  description: |
+    REST API для админ-панели УК «Ключи Москвы».
+
+    Scope спецификации соответствует **реализованному фронтенду**:
+    - авторизация: access JWT в теле ответа + refresh token в HttpOnly cookie;
+    - справочник жилых комплексов;
+    - агрегированный дашборд.
+
+    Разделы «Объекты», «Пользователи», «Заявки» на UI — заглушки, endpoints для них не описаны.
+  version: 1.0.0
+  license:
+    name: Proprietary
+  contact:
+    name: Keys of Moscow
+
+servers:
+  - url: https://{host}/api/v1
+    description: Production / staging
+    variables:
+      host:
+        default: api.example.com
+        description: Хост backend API
+
+tags:
+  - name: Auth
+    description: Вход в админ-панель и профиль оператора
+  - name: Reference
+    description: Справочные данные
+  - name: Dashboard
+    description: Данные главной страницы дашборда
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Вход в админ-панель
+      description: |
+        Заменяет mock-токен в `useLogin`. При успехе:
+
+        - **Тело ответа:** `accessToken` (короткоживущий JWT) — клиент кладёт в localStorage (`access_token`).
+        - **Cookie `refresh_token`:** HttpOnly, Secure, SameSite=Lax — для обновления access без повторного ввода пароля.
+          Недоступен из JavaScript; отправляется браузером только на auth-ручки при `credentials: "include"`.
+
+        Декодирование access JWT на фронте: `sub`, `exp` (см. `decode-token.ts`).
+      operationId: authLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              default:
+                value:
+                  email: admin@example.com
+                  password: "password123"
+      responses:
+        "200":
+          description: Успешная аутентификация
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/SetRefreshTokenCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Неверный email или пароль
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: INVALID_CREDENTIALS
+                message: Неверный email или пароль
+        "422":
+          description: Ошибка валидации (zod на фронте — email, password 6–50)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Обновление access token
+      description: |
+        Выдаёт новый `accessToken`, если валиден refresh token из cookie `refresh_token`.
+        Используется при истечении `exp` access JWT (401 на защищённых ручках) или проактивно до истечения.
+
+        Запрос **без** `Authorization`. Обязательно `credentials: "include"` (fetch) / `withCredentials: true` (axios),
+        чтобы браузер отправил HttpOnly cookie.
+
+        При ротации refresh сервер может вернуть новый `Set-Cookie` (рекомендуется).
+      operationId: authRefresh
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/refreshTokenCookie"
+      responses:
+        "200":
+          description: Новый access token
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/SetRefreshTokenCookie"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Refresh token отсутствует, истёк или отозван
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                code: INVALID_REFRESH_TOKEN
+                message: Сессия истекла, войдите снова
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Текущий пользователь админ-панели
+      description: Данные для блока пользователя в шапке (`User` component).
+      operationId: authMe
+      responses:
+        "200":
+          description: Профиль оператора
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminUser"
+        "401":
+          description: Токен отсутствует или недействителен
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Выход из системы
+      description: |
+        Сервер отзывает refresh token и сбрасывает cookie `refresh_token` (`Set-Cookie` с `Max-Age=0`).
+        Клиент удаляет `access_token` из localStorage.
+
+        Рекомендуется вызывать с `Authorization: Bearer <accessToken>` и `credentials: "include"`.
+        На фронте logout сейчас только очищает localStorage — после интеграции добавить этот запрос.
+      operationId: authLogout
+      parameters:
+        - $ref: "#/components/parameters/refreshTokenCookie"
+      responses:
+        "204":
+          description: Успешный выход
+          headers:
+            Set-Cookie:
+              $ref: "#/components/headers/ClearRefreshTokenCookie"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /residential-complexes:
+    get:
+      tags: [Reference]
+      summary: Список жилых комплексов
+      description: |
+        Справочник для `ComplexSelector`. Значение «Все комплексы» (`all`) —
+        только на клиенте, в ответ API не входит.
+      operationId: listResidentialComplexes
+      responses:
+        "200":
+          description: Список ЖК
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResidentialComplexListResponse"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard:
+    get:
+      tags: [Dashboard]
+      summary: Агрегированные данные дашборда
+      description: |
+        Один ответ для всей страницы `/_private/` (метрики, финансы, активность, все графики).
+
+        **Фильтр ЖК:** без `complexId` — агрегация по ЖК (как `complexesData` в chart-компонентах);
+        `residential-complex-1` … `4` — детализация по домам внутри выбранного ЖК.
+
+        **Период:** `dateFrom` / `dateTo` заложены для будущей привязки `DateRangePicker`
+        (на фронте пока не передаётся в данные).
+      operationId: getDashboard
+      parameters:
+        - $ref: "#/components/parameters/complexId"
+        - $ref: "#/components/parameters/dateFrom"
+        - $ref: "#/components/parameters/dateTo"
+      responses:
+        "200":
+          description: Данные дашборда
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardResponse"
+        "400":
+          description: Некорректные query-параметры
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Короткоживущий JWT access token в заголовке `Authorization: Bearer <token>`.
+        Payload на фронте: `sub` (number, id пользователя), `exp` (unix).
+        См. `decodeToken` в `src/features/auth/lib/decode-token.ts`.
+
+        Refresh token **не** передаётся в Bearer — только в HttpOnly cookie (см. `refreshTokenCookie`).
+
+  parameters:
+    refreshTokenCookie:
+      name: refresh_token
+      in: cookie
+      required: false
+      description: |
+        Долгоживущий refresh token. HttpOnly, Secure, SameSite=Lax, Path `/api/v1/auth` (или `/`).
+        Не читается и не записывается из JavaScript.
+      schema:
+        type: string
+
+    complexId:
+      name: complexId
+      in: query
+      required: false
+      description: |
+        Идентификатор ЖК. Omit — все комплексы (уровень ЖК на графиках).
+        `residential-complex-1` … `residential-complex-4` — детализация по домам.
+      schema:
+        type: string
+        pattern: "^residential-complex-[1-9][0-9]*$"
+      examples:
+        sunnyCity:
+          summary: Один ЖК
+          value: residential-complex-1
+
+    dateFrom:
+      name: dateFrom
+      in: query
+      required: false
+      description: Начало периода (ISO 8601 date). Для `DateRangePicker` (UI пока не подключён).
+      schema:
+        type: string
+        format: date
+      example: "2026-05-01"
+
+    dateTo:
+      name: dateTo
+      in: query
+      required: false
+      description: Конец периода (ISO 8601 date, включительно).
+      schema:
+        type: string
+        format: date
+      example: "2026-05-31"
+
+  headers:
+    SetRefreshTokenCookie:
+      description: |
+        Установка refresh token. Пример (значения `Max-Age`, `Domain` — на усмотрение backend):
+
+        `refresh_token=<opaque>; Path=/api/v1/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`
+      schema:
+        type: string
+      example: refresh_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; Path=/api/v1/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000
+
+    ClearRefreshTokenCookie:
+      description: Сброс refresh token при logout
+      schema:
+        type: string
+      example: refresh_token=; Path=/api/v1/auth; HttpOnly; Secure; SameSite=Lax; Max-Age=0
+
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          example: admin@example.com
+        password:
+          type: string
+          minLength: 6
+          maxLength: 50
+          format: password
+          example: password123
+
+    LoginResponse:
+      type: object
+      required: [accessToken]
+      description: |
+        Только access token в JSON. Refresh token приходит отдельно в cookie `refresh_token` (см. login / refresh).
+      properties:
+        accessToken:
+          type: string
+          description: JWT для заголовка Authorization Bearer
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    AdminUser:
+      type: object
+      required: [id, email, displayName, initials]
+      properties:
+        id:
+          type: integer
+          description: Совпадает с `sub` в JWT
+          example: 1234567890
+        email:
+          type: string
+          format: email
+          example: admin@example.com
+        displayName:
+          type: string
+          description: Отображаемое имя в шапке
+          example: Ренат
+        initials:
+          type: string
+          description: Инициалы для AvatarFallback
+          example: РМ
+
+    ResidentialComplex:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+          description: Slug, передаётся в `complexId` на дашборде
+          example: residential-complex-1
+        name:
+          type: string
+          example: ЖК «Солнечный город»
+
+    ResidentialComplexListResponse:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResidentialComplex"
+
+    Money:
+      type: object
+      required: [amountMinor, currency]
+      description: |
+        Денежная сумма в минорных единицах (копейки для RUB).
+        Фронт форматирует в «12.5М ₽», «285К ₽» на клиенте.
+      properties:
+        amountMinor:
+          type: integer
+          format: int64
+          description: Сумма в копейках (может быть отрицательной для расходов)
+          example: 1250000000
+        currency:
+          type: string
+          enum: [RUB]
+          default: RUB
+
+    Trend:
+      type: object
+      required: [value, isPositive]
+      description: Процент изменения для MetricCard
+      properties:
+        value:
+          type: number
+          format: float
+          description: Абсолютное значение процента (без знака %)
+          example: 8
+        isPositive:
+          type: boolean
+          description: true — зелёный тренд вверх, false — красный
+          example: true
+
+    DashboardMetrics:
+      type: object
+      required:
+        - totalUnits
+        - occupancy
+        - monthlyRevenue
+        - averageRate
+        - activeTenants
+        - trends
+      properties:
+        totalUnits:
+          type: integer
+          description: «Всего объектов» — квартир в аренде
+          example: 82
+        occupancy:
+          $ref: "#/components/schemas/OccupancyMetric"
+        monthlyRevenue:
+          $ref: "#/components/schemas/Money"
+        averageRate:
+          $ref: "#/components/schemas/Money"
+          description: Средняя ставка за 1-комнатную квартиру
+        activeTenants:
+          type: integer
+          description: «Активных арендаторов»
+          example: 71
+        trends:
+          $ref: "#/components/schemas/DashboardMetricTrends"
+
+    OccupancyMetric:
+      type: object
+      required: [percent, occupied, total]
+      properties:
+        percent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 87
+        occupied:
+          type: integer
+          example: 71
+        total:
+          type: integer
+          example: 82
+
+    DashboardMetricTrends:
+      type: object
+      required:
+        - totalUnits
+        - occupancy
+        - monthlyRevenue
+        - averageRate
+        - activeTenants
+      properties:
+        totalUnits:
+          $ref: "#/components/schemas/Trend"
+        occupancy:
+          $ref: "#/components/schemas/Trend"
+        monthlyRevenue:
+          $ref: "#/components/schemas/Trend"
+        averageRate:
+          $ref: "#/components/schemas/Trend"
+        activeTenants:
+          $ref: "#/components/schemas/Trend"
+
+    FinancialSummary:
+      type: object
+      required: [rentIncome, commission, maintenance, netProfit]
+      description: Блок «Финансовая статистика» на дашборде
+      properties:
+        rentIncome:
+          $ref: "#/components/schemas/Money"
+        commission:
+          $ref: "#/components/schemas/Money"
+        maintenance:
+          $ref: "#/components/schemas/Money"
+          description: Расход (amountMinor отрицательный)
+        netProfit:
+          $ref: "#/components/schemas/Money"
+
+    ActivityStatus:
+      type: string
+      enum: [success, warning, info]
+      description: Цвет индикатора в «Недавняя активность»
+
+    RecentActivityItem:
+      type: object
+      required: [apartmentLabel, action, occurredAt, status]
+      properties:
+        apartmentLabel:
+          type: string
+          description: Полный адрес квартиры для отображения
+          example: ЖК «Солнечный город», дом 2, кв. 45
+        action:
+          type: string
+          example: Новый договор аренды
+        occurredAt:
+          type: string
+          format: date-time
+          description: ISO timestamp; фронт может форматировать как «2 часа назад»
+        status:
+          $ref: "#/components/schemas/ActivityStatus"
+
+    OccupancyChartItem:
+      type: object
+      required: [name, occupancyPercent, totalUnits]
+      properties:
+        name:
+          type: string
+          description: Название ЖК или дома
+          example: Солнечный город
+        occupancyPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 85
+        totalUnits:
+          type: integer
+          example: 24
+
+    ApartmentType:
+      type: string
+      enum:
+        - studio
+        - one_room
+        - two_room
+        - three_room
+      description: |
+        Тип квартиры. Отображение на фронте:
+        studio → «Студии», one_room → «1-комнатные», и т.д.
+
+    ApartmentTypesChartItem:
+      type: object
+      required: [type, count]
+      properties:
+        type:
+          $ref: "#/components/schemas/ApartmentType"
+        count:
+          type: integer
+          minimum: 0
+
+    RevenueChartItem:
+      type: object
+      required: [periodLabel, revenue, expenses]
+      properties:
+        periodLabel:
+          type: string
+          description: Подпись оси X («Янв», «Фев» или ISO month)
+          example: Янв
+        revenue:
+          $ref: "#/components/schemas/Money"
+        expenses:
+          $ref: "#/components/schemas/Money"
+
+    PaymentsDynamicChartItem:
+      type: object
+      required: [periodLabel, paid, unpaid]
+      properties:
+        periodLabel:
+          type: string
+          example: Янв
+        paid:
+          type: integer
+          description: Количество оплаченных платежей за период
+          example: 420
+        unpaid:
+          type: integer
+          example: 45
+
+    RequestsDynamicChartItem:
+      type: object
+      required: [periodLabel, created, closed, inProgress]
+      properties:
+        periodLabel:
+          type: string
+          example: Янв
+        created:
+          type: integer
+          example: 245
+        closed:
+          type: integer
+          example: 220
+        inProgress:
+          type: integer
+          example: 25
+
+    PaymentStatus:
+      type: string
+      enum:
+        - on_time
+        - overdue_1_7_days
+        - overdue_8_30_days
+        - overdue_over_30_days
+      description: |
+        Статус оплаты для pie chart. Labels на фронте:
+        on_time → «Вовремя», overdue_1_7_days → «Просрочка 1-7 дней», и т.д.
+
+    PaymentStatusChartItem:
+      type: object
+      required: [status, count]
+      properties:
+        status:
+          $ref: "#/components/schemas/PaymentStatus"
+        count:
+          type: integer
+          minimum: 0
+
+    RadarSeriesPoint:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+          description: Имя серии (ЖК или дом)
+          example: ЖК Солнечный
+        value:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          example: 85
+
+    ComparisonRadarChartRow:
+      type: object
+      required: [metric, series]
+      properties:
+        metric:
+          type: string
+          description: |
+            Ось радара: Заселенность, Своевременность, Обработка заявок,
+            Скорость обработки, Доходность
+          example: Заселенность
+        series:
+          type: array
+          items:
+            $ref: "#/components/schemas/RadarSeriesPoint"
+
+    DashboardResponse:
+      type: object
+      required:
+        - metrics
+        - financialSummary
+        - recentActivity
+        - occupancyChart
+        - apartmentTypesChart
+        - revenueChart
+        - paymentsDynamicChart
+        - requestsDynamicChart
+        - paymentStatusChart
+        - comparisonRadarChart
+        - filters
+      properties:
+        metrics:
+          $ref: "#/components/schemas/DashboardMetrics"
+        financialSummary:
+          $ref: "#/components/schemas/FinancialSummary"
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecentActivityItem"
+        occupancyChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/OccupancyChartItem"
+        apartmentTypesChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApartmentTypesChartItem"
+        revenueChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/RevenueChartItem"
+        paymentsDynamicChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentsDynamicChartItem"
+        requestsDynamicChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/RequestsDynamicChartItem"
+        paymentStatusChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentStatusChartItem"
+        comparisonRadarChart:
+          type: array
+          items:
+            $ref: "#/components/schemas/ComparisonRadarChartRow"
+        filters:
+          $ref: "#/components/schemas/DashboardFiltersApplied"
+
+    DashboardFiltersApplied:
+      type: object
+      required: [complexId, dateFrom, dateTo]
+      description: Эхо применённых фильтров для отладки и синхронизации UI
+      properties:
+        complexId:
+          type: ["string", "null"]
+          description: null — все ЖК (клиентское `all`)
+        dateFrom:
+          type: ["string", "null"]
+          format: date
+        dateTo:
+          type: ["string", "null"]
+          format: date
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          example: INVALID_CREDENTIALS
+        message:
+          type: string
+          example: Неверный email или пароль
+
+    ValidationErrorResponse:
+      type: object
+      required: [code, message, errors]
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Ошибка валидации
+        errors:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field:
+                type: string
+                example: password
+              message:
+                type: string
+                example: Пароль должен содержать минимум 6 символов
+
+security:
+  - bearerAuth: []
