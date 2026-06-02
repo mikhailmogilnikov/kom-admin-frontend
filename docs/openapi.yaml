@@ -195,11 +195,15 @@ paths:
       description: |
         Один ответ для всей страницы `/_private/` (метрики, финансы, активность, все графики).
 
-        **Фильтр ЖК:** без `complexId` — агрегация по ЖК (как `complexesData` в chart-компонентах);
-        `residential-complex-1` … `4` — детализация по домам внутри выбранного ЖК.
+        **Источники данных** — см. `docs/models.rtf` (`ApartmentComplex`, `Sector`, `Flat`,
+        `Contract`, `ContractPayment`, `Transaction`, `Application`).
 
-        **Период:** `dateFrom` / `dateTo` заложены для будущей привязки `DateRangePicker`
-        (на фронте пока не передаётся в данные).
+        **Фильтр ЖК:** `complexId` = `ApartmentComplex.id` (integer). Без параметра — все ЖК;
+        с `complexId` — детализация по `Sector` (дом/сектор) внутри ЖК.
+
+        **Период:** `dateFrom` / `dateTo` влияют на динамику платежей, заявок и дохода
+        (`Transaction.payment_date`, `Application.created_at`). Снимочные метрики «на сегодня»
+        (занятость, статусы квартир) период не меняют.
       operationId: getDashboard
       parameters:
         - $ref: "#/components/parameters/complexId"
@@ -254,15 +258,15 @@ components:
       in: query
       required: false
       description: |
-        Идентификатор ЖК. Omit — все комплексы (уровень ЖК на графиках).
-        `residential-complex-1` … `residential-complex-4` — детализация по домам.
+        `ApartmentComplex.id`. Omit — все комплексы (уровень ЖК на графиках).
+        С `complexId` — детализация по `Sector` (поле `house` / `name`).
       schema:
-        type: string
-        pattern: "^residential-complex-[1-9][0-9]*$"
+        type: integer
+        minimum: 1
       examples:
         sunnyCity:
           summary: Один ЖК
-          value: residential-complex-1
+          value: 1
 
     dateFrom:
       name: dateFrom
@@ -354,11 +358,12 @@ components:
       required: [id, name]
       properties:
         id:
-          type: string
-          description: Slug, передаётся в `complexId` на дашборде
-          example: residential-complex-1
+          type: integer
+          description: "ApartmentComplex.id — передаётся в complexId на дашборде"
+          example: 1
         name:
           type: string
+          description: ApartmentComplex.name
           example: ЖК «Солнечный город»
 
     ResidentialComplexListResponse:
@@ -387,26 +392,40 @@ components:
           enum: [RUB]
           default: RUB
 
+    MetricSnapshotCaption:
+      type: object
+      required: [label]
+      description: |
+        Подпись под снимочной метрикой (без сравнения с прошлым периодом).
+        Для «Всего объектов» и «Занятость» — всегда «на сегодняшний день».
+      properties:
+        label:
+          type: string
+          example: на сегодняшний день
+
     Trend:
       type: object
       required: [value, isPositive]
-      description: Процент изменения для MetricCard
+      description: |
+        Процент изменения к предыдущему периоду (`dateFrom`/`dateTo`).
+        **Не используется** для `totalUnits` и `occupancy` (нет истории занятости по дням).
       properties:
         value:
           type: number
           format: float
           description: Абсолютное значение процента (без знака %)
-          example: 8
+          example: 12
         isPositive:
           type: boolean
-          description: true — зелёный тренд вверх, false — красный
           example: true
 
     DashboardMetrics:
       type: object
       required:
         - totalUnits
+        - totalUnitsCaption
         - occupancy
+        - occupancyCaption
         - monthlyRevenue
         - averageRate
         - activeTenants
@@ -414,18 +433,30 @@ components:
       properties:
         totalUnits:
           type: integer
-          description: «Всего объектов» — квартир в аренде
+          description: |
+            «Всего объектов» — `COUNT(Flat)` в scope фильтра (все квартиры в БД, не только в аренде).
           example: 82
+        totalUnitsCaption:
+          $ref: "#/components/schemas/MetricSnapshotCaption"
         occupancy:
           $ref: "#/components/schemas/OccupancyMetric"
+        occupancyCaption:
+          $ref: "#/components/schemas/MetricSnapshotCaption"
         monthlyRevenue:
           $ref: "#/components/schemas/Money"
+          description: |
+            «Доход за месяц» — `SUM(Transaction.amount)` за период по оплаченным счетам
+            (`ContractPayment.status = PAYED` → `Transaction`).
         averageRate:
           $ref: "#/components/schemas/Money"
-          description: Средняя ставка за 1-комнатную квартиру
+          description: |
+            «Средняя ставка» — `AVG(Contract.default_amount)` по активным договорам
+            (`start_date` ≤ сегодня ≤ `end_date`).
         activeTenants:
           type: integer
-          description: «Активных арендаторов»
+          description: |
+            «Активных арендаторов» — уникальные `User` с `ContractUser.role = TENANT`
+            по активным договорам.
           example: 71
         trends:
           $ref: "#/components/schemas/DashboardMetricTrends"
@@ -448,17 +479,9 @@ components:
 
     DashboardMetricTrends:
       type: object
-      required:
-        - totalUnits
-        - occupancy
-        - monthlyRevenue
-        - averageRate
-        - activeTenants
+      required: [monthlyRevenue, averageRate, activeTenants]
+      description: Тренды только для метрик, которые можно сравнить с предыдущим периодом
       properties:
-        totalUnits:
-          $ref: "#/components/schemas/Trend"
-        occupancy:
-          $ref: "#/components/schemas/Trend"
         monthlyRevenue:
           $ref: "#/components/schemas/Trend"
         averageRate:
@@ -466,20 +489,42 @@ components:
         activeTenants:
           $ref: "#/components/schemas/Trend"
 
-    FinancialSummary:
+    ApplicationStatus:
+      type: string
+      enum: [OPENED, WAITING, POSTPONED, CLOSED]
+      description: Application.status (EnumApplicationStatus)
+
+    ApplicationsSummaryItem:
       type: object
-      required: [rentIncome, commission, maintenance, netProfit]
-      description: Блок «Финансовая статистика» на дашборде
+      required: [status, label, count]
       properties:
-        rentIncome:
-          $ref: "#/components/schemas/Money"
-        commission:
-          $ref: "#/components/schemas/Money"
-        maintenance:
-          $ref: "#/components/schemas/Money"
-          description: Расход (amountMinor отрицательный)
-        netProfit:
-          $ref: "#/components/schemas/Money"
+        status:
+          $ref: "#/components/schemas/ApplicationStatus"
+        label:
+          type: string
+          example: Открытые
+        count:
+          type: integer
+          minimum: 0
+        hint:
+          type: string
+          description: Подсказка под подписью (например «всего» для закрытых)
+          example: в работе
+
+    ApplicationsSummary:
+      type: object
+      required: [activeCount, items]
+      description: |
+        Сводка по заявкам (Application). Заменяет пустой блок «Финансовая статистика».
+        activeCount — OPENED + WAITING + POSTPONED.
+      properties:
+        activeCount:
+          type: integer
+          example: 29
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationsSummaryItem"
 
     ActivityStatus:
       type: string
@@ -496,6 +541,9 @@ components:
           example: ЖК «Солнечный город», дом 2, кв. 45
         action:
           type: string
+          description: |
+            Тип события: новый/продлённый договор (`Contract`), заявка (`Application`),
+            просрочка счёта (`ContractPayment.status = OVERDUE`).
           example: Новый договор аренды
         occurredAt:
           type: string
@@ -516,35 +564,36 @@ components:
           type: integer
           minimum: 0
           maximum: 100
+          description: Доля Flat.status OCCUPIED на сегодня
           example: 85
         totalUnits:
           type: integer
+          description: COUNT(Flat) в группе
           example: 24
 
-    ApartmentType:
+    FlatStatus:
       type: string
-      enum:
-        - studio
-        - one_room
-        - two_room
-        - three_room
+      enum: [OCCUPIED, UNOCCUPIED, RENOVATING]
       description: |
-        Тип квартиры. Отображение на фронте:
-        studio → «Студии», one_room → «1-комнатные», и т.д.
+        `Flat.status` (`EnumFlatStatus`). Подписи на фронте:
+        OCCUPIED → «Занята», UNOCCUPIED → «Свободна», RENOVATING → «Ремонт».
 
-    ApartmentTypesChartItem:
+    FlatsByStatusChartItem:
       type: object
-      required: [type, count]
+      required: [status, count]
       properties:
-        type:
-          $ref: "#/components/schemas/ApartmentType"
+        status:
+          $ref: "#/components/schemas/FlatStatus"
         count:
           type: integer
           minimum: 0
 
-    RevenueChartItem:
+    RentIncomeChartItem:
       type: object
-      required: [periodLabel, revenue, expenses]
+      required: [periodLabel, revenue]
+      description: |
+        «Финансовая динамика» — только поступления. Расходов на уровне УК в БД нет
+        (`FlatExpenses` — справочник по квартире, не агрегат дашборда).
       properties:
         periodLabel:
           type: string
@@ -552,8 +601,7 @@ components:
           example: Янв
         revenue:
           $ref: "#/components/schemas/Money"
-        expenses:
-          $ref: "#/components/schemas/Money"
+          description: SUM(Transaction.amount) за период
 
     PaymentsDynamicChartItem:
       type: object
@@ -564,10 +612,11 @@ components:
           example: Янв
         paid:
           type: integer
-          description: Количество оплаченных платежей за период
+          description: ContractPayment со статусом PAYED за период (есть Transaction)
           example: 420
         unpaid:
           type: integer
+          description: OVERDUE и WAITING без оплаты за период
           example: 45
 
     RequestsDynamicChartItem:
@@ -579,84 +628,86 @@ components:
           example: Янв
         created:
           type: integer
+          description: Новые `Application` за период
           example: 245
         closed:
           type: integer
+          description: Application.status CLOSED
           example: 220
         inProgress:
           type: integer
+          description: OPENED, WAITING, POSTPONED
           example: 25
 
-    PaymentStatus:
+    ContractPaymentStatus:
       type: string
-      enum:
-        - on_time
-        - overdue_1_7_days
-        - overdue_8_30_days
-        - overdue_over_30_days
+      enum: [WAITING, PENDING, PAYED, OVERDUE]
       description: |
-        Статус оплаты для pie chart. Labels на фронте:
-        on_time → «Вовремя», overdue_1_7_days → «Просрочка 1-7 дней», и т.д.
+        `ContractPayment.status` (`EnumContractPaymentStatus`). Подписи:
+        WAITING → «Ожидается», PENDING → «В процессе», PAYED → «Оплачено», OVERDUE → «Просрочено».
 
     PaymentStatusChartItem:
       type: object
       required: [status, count]
       properties:
         status:
-          $ref: "#/components/schemas/PaymentStatus"
+          $ref: "#/components/schemas/ContractPaymentStatus"
         count:
           type: integer
           minimum: 0
 
-    RadarSeriesPoint:
+    ExpiringContractsChartItem:
       type: object
-      required: [key, value]
+      required: [name, count]
+      description: |
+        Договоры с Contract.end_date в окне [сегодня; сегодня + withinDays],
+        договор активен (start_date ≤ сегодня ≤ end_date).
+        name — ApartmentComplex.name или Sector (дом).
       properties:
-        key:
+        name:
           type: string
-          description: Имя серии (ЖК или дом)
-          example: ЖК Солнечный
-        value:
-          type: number
-          format: float
+          example: Солнечный город
+        count:
+          type: integer
           minimum: 0
-          maximum: 100
-          example: 85
+          example: 5
 
-    ComparisonRadarChartRow:
+    ExpiringContractsChart:
       type: object
-      required: [metric, series]
+      required: [withinDays, totalCount, items]
       properties:
-        metric:
-          type: string
-          description: |
-            Ось радара: Заселенность, Своевременность, Обработка заявок,
-            Скорость обработки, Доходность
-          example: Заселенность
-        series:
+        withinDays:
+          type: integer
+          example: 30
+          description: Горизонт «истекают в ближайшие N дней»
+        totalCount:
+          type: integer
+          minimum: 0
+          example: 12
+        items:
           type: array
           items:
-            $ref: "#/components/schemas/RadarSeriesPoint"
+            $ref: "#/components/schemas/ExpiringContractsChartItem"
 
     DashboardResponse:
       type: object
       required:
         - metrics
-        - financialSummary
+        - applicationsSummary
         - recentActivity
         - occupancyChart
-        - apartmentTypesChart
-        - revenueChart
+        - flatsByStatusChart
+        - rentIncomeChart
         - paymentsDynamicChart
         - requestsDynamicChart
         - paymentStatusChart
-        - comparisonRadarChart
+        - expiringContractsChart
         - filters
       properties:
         metrics:
           $ref: "#/components/schemas/DashboardMetrics"
-        financialSummary:
-          $ref: "#/components/schemas/FinancialSummary"
+        applicationsSummary:
+          $ref: "#/components/schemas/ApplicationsSummary"
         recentActivity:
           type: array
           items:
@@ -665,14 +716,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/OccupancyChartItem"
-        apartmentTypesChart:
+        flatsByStatusChart:
           type: array
           items:
-            $ref: "#/components/schemas/ApartmentTypesChartItem"
-        revenueChart:
+            $ref: "#/components/schemas/FlatsByStatusChartItem"
+        rentIncomeChart:
           type: array
           items:
-            $ref: "#/components/schemas/RevenueChartItem"
+            $ref: "#/components/schemas/RentIncomeChartItem"
         paymentsDynamicChart:
           type: array
           items:
@@ -685,10 +736,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/PaymentStatusChartItem"
-        comparisonRadarChart:
-          type: array
-          items:
-            $ref: "#/components/schemas/ComparisonRadarChartRow"
+        expiringContractsChart:
+          $ref: "#/components/schemas/ExpiringContractsChart"
         filters:
           $ref: "#/components/schemas/DashboardFiltersApplied"
 
@@ -698,7 +747,7 @@ components:
       description: Эхо применённых фильтров для отладки и синхронизации UI
       properties:
         complexId:
-          type: ["string", "null"]
+          type: ["integer", "null"]
           description: null — все ЖК (клиентское `all`)
         dateFrom:
           type: ["string", "null"]

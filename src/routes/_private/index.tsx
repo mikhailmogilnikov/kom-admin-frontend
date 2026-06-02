@@ -7,10 +7,11 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { ApartmentTypesChart } from "@/features/dashboard/ui/apartment-types-chart";
-import { ComparisonRadarChart } from "@/features/dashboard/ui/comparison-radar-chart";
+import { ApplicationsSummaryCard } from "@/features/dashboard/ui/applications-summary-card";
 import { ComplexSelector } from "@/features/dashboard/ui/complex-selector";
 import { DateRangePicker } from "@/features/dashboard/ui/date-range-picker";
+import { ExpiringContractsChart } from "@/features/dashboard/ui/expiring-contracts-chart";
+import { FlatStatusChart } from "@/features/dashboard/ui/flat-status-chart";
 import { MetricCard } from "@/features/dashboard/ui/metric-card";
 import { OccupancyChart } from "@/features/dashboard/ui/occupancy-chart";
 import { PaymentStatusChart } from "@/features/dashboard/ui/payment-status-chart";
@@ -29,14 +30,14 @@ const DashboardComponent = () => {
       value: 82,
       description: "Квартир в аренде",
       icon: Building2Icon,
-      trend: { value: 8, isPositive: true },
+      snapshotCaption: "на сегодняшний день",
     },
     {
       title: "Занятость",
       value: "87%",
       description: "71 из 82 квартир",
       icon: HomeIcon,
-      trend: { value: 5, isPositive: true },
+      snapshotCaption: "на сегодняшний день",
     },
     {
       title: "Доход за месяц",
@@ -48,7 +49,7 @@ const DashboardComponent = () => {
     {
       title: "Средняя ставка",
       value: "285К ₽",
-      description: "За 1-комнатную квартиру",
+      description: "Средняя ставка по договорам",
       icon: TrendingUpIcon,
       trend: { value: 3, isPositive: false },
     },
@@ -160,48 +161,15 @@ const DashboardComponent = () => {
         </Card>
 
         {/* Распределение по типам квартир */}
-        <ApartmentTypesChart selectedComplex={selectedComplex} />
+        <FlatStatusChart selectedComplex={selectedComplex} />
 
-        {/* Финансовая статистика */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Финансовая статистика</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="text-muted-foreground text-sm">
-                  Доход от аренды
-                </span>
-                <span className="font-medium">12.5М ₽</span>
-              </div>
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="text-muted-foreground text-sm">
-                  Комиссионные
-                </span>
-                <span className="font-medium">1.2М ₽</span>
-              </div>
-              <div className="flex items-center justify-between border-b pb-2">
-                <span className="text-muted-foreground text-sm">
-                  Обслуживание
-                </span>
-                <span className="font-medium text-red-500">-450К ₽</span>
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <span className="font-medium">Чистая прибыль</span>
-                <span className="font-bold text-green-500 text-lg">
-                  11.3М ₽
-                </span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ApplicationsSummaryCard selectedComplex={selectedComplex} />
 
         <RevenueChart selectedComplex={selectedComplex} />
         <PaymentsDynamicChart selectedComplex={selectedComplex} />
         <RequestsDynamicChart selectedComplex={selectedComplex} />
         <PaymentStatusChart selectedComplex={selectedComplex} />
-        <ComparisonRadarChart selectedComplex={selectedComplex} />
+        <ExpiringContractsChart selectedComplex={selectedComplex} />
       </div>
     </div>
   );

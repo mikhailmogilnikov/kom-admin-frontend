@@ -9,42 +9,47 @@ import {
   ChartTooltipContent,
 } from "@/shared/ui/chart";
 
-// Данные для всех ЖК
-const allComplexesData = [
-  { status: "Вовремя", count: 420, fill: "var(--chart-1)" },
-  { status: "Просрочка 1-7 дней", count: 65, fill: "var(--chart-2)" },
-  { status: "Просрочка 8-30 дней", count: 38, fill: "var(--chart-3)" },
-  { status: "Просрочка >30 дней", count: 18, fill: "var(--chart-4)" },
+type PaymentStatusKey = "PAYED" | "WAITING" | "PENDING" | "OVERDUE";
+
+// ContractPayment.status — EnumContractPaymentStatus
+const allComplexesData: Array<{
+  status: PaymentStatusKey;
+  count: number;
+  fill: string;
+}> = [
+  { status: "PAYED", count: 420, fill: "var(--chart-1)" },
+  { status: "WAITING", count: 65, fill: "var(--chart-2)" },
+  { status: "PENDING", count: 38, fill: "var(--chart-3)" },
+  { status: "OVERDUE", count: 18, fill: "var(--chart-4)" },
 ];
 
-// Данные по каждому ЖК
 const complexesDataById: Record<
   string,
-  Array<{ status: string; count: number; fill: string }>
+  Array<{ status: PaymentStatusKey; count: number; fill: string }>
 > = {
-  "residential-complex-1": [
-    { status: "Вовремя", count: 110, fill: "var(--chart-1)" },
-    { status: "Просрочка 1-7 дней", count: 16, fill: "var(--chart-2)" },
-    { status: "Просрочка 8-30 дней", count: 10, fill: "var(--chart-3)" },
-    { status: "Просрочка >30 дней", count: 5, fill: "var(--chart-4)" },
+  "1": [
+    { status: "PAYED", count: 110, fill: "var(--chart-1)" },
+    { status: "WAITING", count: 16, fill: "var(--chart-2)" },
+    { status: "PENDING", count: 10, fill: "var(--chart-3)" },
+    { status: "OVERDUE", count: 5, fill: "var(--chart-4)" },
   ],
-  "residential-complex-2": [
-    { status: "Вовремя", count: 105, fill: "var(--chart-1)" },
-    { status: "Просрочка 1-7 дней", count: 17, fill: "var(--chart-2)" },
-    { status: "Просрочка 8-30 дней", count: 9, fill: "var(--chart-3)" },
-    { status: "Просрочка >30 дней", count: 4, fill: "var(--chart-4)" },
+  "2": [
+    { status: "PAYED", count: 105, fill: "var(--chart-1)" },
+    { status: "WAITING", count: 17, fill: "var(--chart-2)" },
+    { status: "PENDING", count: 9, fill: "var(--chart-3)" },
+    { status: "OVERDUE", count: 4, fill: "var(--chart-4)" },
   ],
-  "residential-complex-3": [
-    { status: "Вовремя", count: 102, fill: "var(--chart-1)" },
-    { status: "Просрочка 1-7 дней", count: 16, fill: "var(--chart-2)" },
-    { status: "Просрочка 8-30 дней", count: 10, fill: "var(--chart-3)" },
-    { status: "Просрочка >30 дней", count: 5, fill: "var(--chart-4)" },
+  "3": [
+    { status: "PAYED", count: 102, fill: "var(--chart-1)" },
+    { status: "WAITING", count: 16, fill: "var(--chart-2)" },
+    { status: "PENDING", count: 10, fill: "var(--chart-3)" },
+    { status: "OVERDUE", count: 5, fill: "var(--chart-4)" },
   ],
-  "residential-complex-4": [
-    { status: "Вовремя", count: 103, fill: "var(--chart-1)" },
-    { status: "Просрочка 1-7 дней", count: 16, fill: "var(--chart-2)" },
-    { status: "Просрочка 8-30 дней", count: 9, fill: "var(--chart-3)" },
-    { status: "Просрочка >30 дней", count: 4, fill: "var(--chart-4)" },
+  "4": [
+    { status: "PAYED", count: 103, fill: "var(--chart-1)" },
+    { status: "WAITING", count: 16, fill: "var(--chart-2)" },
+    { status: "PENDING", count: 9, fill: "var(--chart-3)" },
+    { status: "OVERDUE", count: 4, fill: "var(--chart-4)" },
   ],
 };
 
@@ -52,20 +57,20 @@ const chartConfig = {
   count: {
     label: "Счетов",
   },
-  Вовремя: {
-    label: "Вовремя",
+  PAYED: {
+    label: "Оплачено",
     color: "hsl(var(--chart-1))",
   },
-  "Просрочка 1-7 дней": {
-    label: "Просрочка 1-7 дней",
+  WAITING: {
+    label: "Ожидается",
     color: "hsl(var(--chart-2))",
   },
-  "Просрочка 8-30 дней": {
-    label: "Просрочка 8-30 дней",
+  PENDING: {
+    label: "В процессе",
     color: "hsl(var(--chart-3))",
   },
-  "Просрочка >30 дней": {
-    label: "Просрочка >30 дней",
+  OVERDUE: {
+    label: "Просрочено",
     color: "hsl(var(--chart-4))",
   },
 } satisfies ChartConfig;
@@ -83,9 +88,10 @@ export const PaymentStatusChart = ({
   const chartData =
     selectedComplex === "all"
       ? allComplexesData
-      : complexesDataById[selectedComplex] || allComplexesData;
+      : (complexesDataById[selectedComplex] ?? allComplexesData);
 
-  const totalCount = chartData.reduce((sum, item) => sum + item.count, 0);
+  const visibleData = chartData.filter((item) => item.count > 0);
+  const totalCount = visibleData.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <Card>
@@ -98,16 +104,15 @@ export const PaymentStatusChart = ({
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  formatter={(value, name) => [
+                  formatter={(value) => [
                     `${value} счетов (${Math.round((Number(value) / totalCount) * PERCENT_MULTIPLIER)}%)`,
-                    name,
                   ]}
-                  hideLabel
+                  nameKey="status"
                 />
               }
             />
             <Pie
-              data={chartData}
+              data={visibleData}
               dataKey="count"
               label={({ payload, ...props }) => (
                 <text

@@ -80,7 +80,7 @@ GET /api/v1/residential-complexes
 Authorization: Bearer <token>
 ```
 
-Ответ: `{ "items": [{ "id": "residential-complex-1", "name": "ЖК «Солнечный город»" }, ...] }`.
+Ответ: `{ "items": [{ "id": 1, "name": "ЖК «Солнечный город»" }, ...] }` (`ApartmentComplex.id`).
 
 ### Дашборд
 
@@ -93,32 +93,44 @@ Query (все опциональны):
 
 | Параметр | Описание |
 |----------|----------|
-| `complexId` | `residential-complex-1` … `4` — графики по домам; без параметра — по ЖК |
+| `complexId` | `ApartmentComplex.id` (1, 2, …) — графики по `Sector`; без параметра — по ЖК |
 | `dateFrom` | `YYYY-MM-DD` — для будущей привязки DateRangePicker |
 | `dateTo` | `YYYY-MM-DD` |
 
 Пример с фильтром ЖК:
 
 ```http
-GET /api/v1/dashboard?complexId=residential-complex-1
+GET /api/v1/dashboard?complexId=1
 Authorization: Bearer <token>
 ```
 
 Тело ответа — поля:
 
-| Поле | Виджет на фронте |
-|------|------------------|
-| `metrics` | 5× `MetricCard` |
-| `financialSummary` | карточка «Финансовая статистика» |
-| `recentActivity` | «Недавняя активность» |
-| `occupancyChart` | `OccupancyChart` |
-| `apartmentTypesChart` | `ApartmentTypesChart` |
-| `revenueChart` | `RevenueChart` |
-| `paymentsDynamicChart` | `PaymentsDynamicChart` |
-| `requestsDynamicChart` | `RequestsDynamicChart` |
-| `paymentStatusChart` | `PaymentStatusChart` |
-| `comparisonRadarChart` | `ComparisonRadarChart` |
-| `filters` | эхо применённых `complexId`, `dateFrom`, `dateTo` |
+| Поле | Виджет | Источник в БД (`docs/models.rtf`) |
+|------|--------|-----------------------------------|
+| `metrics` | 5× `MetricCard` | `Flat`, `Contract`, `Transaction`, `ContractUser` |
+| `applicationsSummary` | карточка «Заявки» | `Application.status` |
+| `recentActivity` | «Недавняя активность» | `Contract`, `Application`, `ContractPayment` |
+| `occupancyChart` | `OccupancyChart` | `Flat.status`, `Sector` |
+| `flatsByStatusChart` | `FlatStatusChart` | `Flat.status` (OCCUPIED / UNOCCUPIED / RENOVATING) |
+| `rentIncomeChart` | `RevenueChart` | `Transaction` (без расходов) |
+| `paymentsDynamicChart` | `PaymentsDynamicChart` | `ContractPayment` + `Transaction` |
+| `requestsDynamicChart` | `RequestsDynamicChart` | `Application` |
+| `paymentStatusChart` | `PaymentStatusChart` | `ContractPayment.status` |
+| `expiringContractsChart` | `ExpiringContractsChart` | `Contract.end_date` (30 дней) |
+| `filters` | эхо фильтров | query-параметры |
+
+Сравнение ЖК по заселённости — **`occupancyChart`**. Сроки аренды — **`expiringContractsChart`**.
+
+### Ограничения дашборда (согласовано с бэкендом)
+
+| Было на макете | Стало | Причина |
+|----------------|-------|---------|
+| Тренд ↑8% у «Всего объектов» / «Занятость» | `totalUnitsCaption` / `occupancyCaption`: «на сегодняшний день» | Нет истории занятости по дням |
+| Распределение по типам квартир | **Статусы квартир** (`flatsByStatusChart`) | В `Flat` нет поля «кол-во комнат» |
+| Финансовая статистика (1 строка) | **Заявки** (`applicationsSummary`) | Application по статусам |
+| Доход + расходы на графике | Только `revenue` (`rentIncomeChart`) | Нет расходов УК |
+| Блок «Сравнение жилых комплексов» (радар / 4 метрики) | **Истекающие договоры** | `Contract.end_date`, один цвет, без наложения серий |
 
 ## Деньги и JWT
 

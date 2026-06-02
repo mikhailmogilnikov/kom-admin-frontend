@@ -15,10 +15,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
 
 const COMPLEXES = [
   { value: "all", label: "Все комплексы" },
-  { value: "residential-complex-1", label: "ЖК «Солнечный город»" },
-  { value: "residential-complex-2", label: "ЖК «Зеленый квартал»" },
-  { value: "residential-complex-3", label: "ЖК «Речной берег»" },
-  { value: "residential-complex-4", label: "ЖК «Парковый»" },
+  { value: "1", label: "ЖК «Солнечный город»" },
+  { value: "2", label: "ЖК «Зеленый квартал»" },
+  { value: "3", label: "ЖК «Речной берег»" },
+  { value: "4", label: "ЖК «Парковый»" },
 ];
 
 type ComplexSelectorProps = {

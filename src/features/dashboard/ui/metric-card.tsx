@@ -10,6 +10,7 @@ type MetricCardProps = {
     value: number;
     isPositive: boolean;
   };
+  snapshotCaption?: string;
 };
 
 export const MetricCard = ({
@@ -18,6 +19,7 @@ export const MetricCard = ({
   description,
   icon: Icon,
   trend,
+  snapshotCaption,
 }: MetricCardProps) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -28,6 +30,9 @@ export const MetricCard = ({
       <div className="font-bold text-2xl">{value}</div>
       {description && (
         <p className="text-muted-foreground text-xs">{description}</p>
+      )}
+      {snapshotCaption && (
+        <p className="mt-2 text-muted-foreground text-xs">{snapshotCaption}</p>
       )}
       {trend && (
         <p

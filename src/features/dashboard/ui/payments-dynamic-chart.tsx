@@ -24,7 +24,7 @@ const complexesDataById: Record<
   string,
   Array<{ month: string; paid: number; unpaid: number }>
 > = {
-  "residential-complex-1": [
+  "1": [
     { month: "Янв", paid: 110, unpaid: 12 },
     { month: "Фев", paid: 115, unpaid: 10 },
     { month: "Мар", paid: 118, unpaid: 11 },
@@ -32,7 +32,7 @@ const complexesDataById: Record<
     { month: "Май", paid: 122, unpaid: 10 },
     { month: "Июн", paid: 124, unpaid: 8 },
   ],
-  "residential-complex-2": [
+  "2": [
     { month: "Янв", paid: 105, unpaid: 11 },
     { month: "Фев", paid: 108, unpaid: 9 },
     { month: "Мар", paid: 110, unpaid: 10 },
@@ -40,7 +40,7 @@ const complexesDataById: Record<
     { month: "Май", paid: 114, unpaid: 9 },
     { month: "Июн", paid: 115, unpaid: 7 },
   ],
-  "residential-complex-3": [
+  "3": [
     { month: "Янв", paid: 102, unpaid: 10 },
     { month: "Фев", paid: 106, unpaid: 9 },
     { month: "Мар", paid: 108, unpaid: 10 },
@@ -48,7 +48,7 @@ const complexesDataById: Record<
     { month: "Май", paid: 112, unpaid: 10 },
     { month: "Июн", paid: 114, unpaid: 8 },
   ],
-  "residential-complex-4": [
+  "4": [
     { month: "Янв", paid: 103, unpaid: 12 },
     { month: "Фев", paid: 109, unpaid: 10 },
     { month: "Мар", paid: 109, unpaid: 11 },

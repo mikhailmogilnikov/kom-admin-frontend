@@ -1,0 +1,485 @@
+{\rtf1\ansi\ansicpg1251\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red195\green123\blue90;\red23\green23\blue26;\red174\green176\blue183;
+\red89\green158\blue96;\red152\green54\blue29;\red38\green157\blue169;\red160\green0\blue163;\red128\green63\blue122;
+\red103\green107\blue114;\red164\green160\blue78;\red71\green149\blue242;\red92\green96\blue103;\red117\green114\blue185;
+}
+{\*\expandedcolortbl;;\csgenericrgb\c76471\c48235\c35294;\csgenericrgb\c9020\c9020\c10196;\csgenericrgb\c68235\c69020\c71765;
+\csgenericrgb\c34902\c61961\c37647;\csgenericrgb\c59608\c21176\c11373;\csgenericrgb\c14902\c61569\c66275;\csgenericrgb\c62745\c0\c63922;\csgenericrgb\c50196\c24706\c47843;
+\csgenericrgb\c40392\c41961\c44706;\csgenericrgb\c64314\c62745\c30588;\csgenericrgb\c27843\c58431\c94902;\csgenericrgb\c36078\c37647\c40392;\csgenericrgb\c45882\c44706\c72549;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+
+\f0\fs26 \cf2 \cb3 class \cf4 ApartmentComplex(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1046 \u1050 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    logo_url = models.ImageField(\cf5 "\uc0\u1051 \u1086 \u1075 \u1086 \u1090 \u1080 \u1087 "\cf4 , \cf6 upload_to\cf4 =upload_to_logo, \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    image_url = models.ImageField(\cf5 "\uc0\u1048 \u1079 \u1086 \u1073 \u1088 \u1072 \u1078 \u1077 \u1085 \u1080 \u1077 "\cf4 , \cf6 upload_to\cf4 =upload_to_image, \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    parking_type = models.CharField(\cf5 "\uc0\u1058 \u1080 \u1087  \u1087 \u1072 \u1088 \u1082 \u1086 \u1074 \u1082 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumParkingTypes.choices,\
+                                    \cf6 default\cf4 =EnumParkingTypes.UNDERGROUND)\
+    coordinates = models.CharField(\cf5 "\uc0\u1050 \u1086 \u1086 \u1088 \u1076 \u1080 \u1085 \u1072 \u1090 \u1099 "\cf4 , \cf6 max_length\cf4 =\cf7 256\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'apartment_complexes'\
+        \cf4 verbose_name = \cf5 "\uc0\u1046 \u1080 \u1083 \u1086 \u1081  \u1082 \u1086 \u1084 \u1087 \u1083 \u1077 \u1082 \u1089 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1046 \u1080 \u1083 \u1099 \u1077  \u1082 \u1086 \u1084 \u1087 \u1083 \u1077 \u1082 \u1089 \u1099 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .name\
+\
+\
+\cf2 class \cf4 User(models.Model):\
+    first_name = models.CharField(\cf5 "\uc0\u1048 \u1084 \u1103 "\cf4 , \cf6 max_length\cf4 =\cf7 64\cf4 )\
+    last_name = models.CharField(\cf5 "\uc0\u1060 \u1072 \u1084 \u1080 \u1083 \u1080 \u1103 "\cf4 , \cf6 max_length\cf4 =\cf7 64\cf4 )\
+    patronymic = models.CharField(\cf5 "\uc0\u1054 \u1090 \u1095 \u1077 \u1089 \u1090 \u1074 \u1086 "\cf4 , \cf6 max_length\cf4 =\cf7 64\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    phone = models.CharField(\cf5 "\uc0\u1058 \u1077 \u1083 \u1077 \u1092 \u1086 \u1085 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 unique\cf4 =\cf2 True\cf4 )\
+    password_hash = models.CharField(\cf5 "\uc0\u1061 \u1101 \u1096  \u1087 \u1072 \u1088 \u1086 \u1083 \u1103 "\cf4 , \cf6 max_length\cf4 =\cf7 256\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    email = models.CharField(\cf5 "\uc0\u1069 \u1083 . \u1087 \u1086 \u1095 \u1090 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 unique\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    join_date = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1088 \u1077 \u1075 \u1080 \u1089 \u1090 \u1088 \u1072 \u1094 \u1080 \u1080 "\cf4 , \cf6 auto_now_add\cf4 =\cf2 True\cf4 )\
+    birth_day = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1088 \u1086 \u1078 \u1076 \u1077 \u1085 \u1080 \u1103 "\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    comment = models.CharField(\cf5 "\uc0\u1050 \u1086 \u1084 \u1084 \u1077 \u1085 \u1090 \u1072 \u1088 \u1080 \u1081 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    role = models.CharField(\cf5 "\uc0\u1056 \u1086 \u1083 \u1100 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumUserRoles.choices, \cf6 default\cf4 =EnumUserRoles.TENANT)\
+    type = models.CharField(\cf5 "\uc0\u1058 \u1080 \u1087  \u1087 \u1086 \u1083 \u1100 \u1079 \u1086 \u1074 \u1072 \u1090 \u1077 \u1083 \u1103 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumUserTypes.choices,\
+                            \cf6 default\cf4 =EnumUserTypes.NATURAL_PERSON)\
+    company_type = models.CharField(\cf5 "\uc0\u1058 \u1080 \u1087  \u1082 \u1086 \u1084 \u1087 \u1072 \u1085 \u1080 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    company_name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1082 \u1086 \u1084 \u1087 \u1072 \u1085 \u1080 \u1080  \u1082 \u1086 \u1084 \u1087 \u1072 \u1085 \u1080 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    company_number = models.CharField(\cf5 "\uc0\u1053 \u1086 \u1084 \u1077 \u1088  \u1082 \u1086 \u1084 \u1087 \u1072 \u1085 \u1080 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 "users"\
+        \cf4 verbose_name = \cf5 "\uc0\u1055 \u1086 \u1083 \u1100 \u1079 \u1086 \u1074 \u1072 \u1090 \u1077 \u1083 \u1100 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1055 \u1086 \u1083 \u1100 \u1079 \u1086 \u1074 \u1072 \u1090 \u1077 \u1083 \u1080 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf10 # return f"user_id=\{self.id\} \uc0\u1048 \u1052 \u1071 (\{self.first_name\}) \u1048 \u1052 \u1071 _\u1070 \u1056 (\{self.company_name\}) (\{self.get_role_display()\})"\
+        \cf4 user_name = \cf9 self\cf4 .first_name + \cf5 " " \cf4 + \cf9 self\cf4 .last_name \cf2 if \cf9 self\cf4 .first_name \cf2 and \cf9 self\cf4 .last_name \cf2 else \cf9 self\cf4 .company_name\
+        \cf2 return \cf5 f"user_id=\cf2 \{\cf9 self\cf4 .id\cf2 \}\cf5  \uc0\u1048 \u1052 \u1071 (\cf2 \{\cf4 user_name\cf2 \}\cf5 ) (\cf2 \{\cf9 self\cf4 .get_role_display()\cf2 \}\cf5 )"\
+\
+    \cf11 @property\
+    \cf2 def \cf12 is_staff\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .role \cf2 in \cf4 [EnumUserRoles.ADMIN, EnumUserRoles.EDITOR]\
+\
+    \cf11 @property\
+    \cf2 def \cf12 is_superuser\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .role == EnumUserRoles.ADMIN\
+\
+    \cf11 @property\
+    \cf2 def \cf12 is_active\cf4 (\cf9 self\cf4 ):\
+        \cf2 return True\
+\
+    \cf11 @property\
+    \cf2 def \cf12 is_anonymous\cf4 (\cf9 self\cf4 ):\
+        \cf2 return False\
+\
+    \cf11 @property\
+    \cf2 def \cf12 is_authenticated\cf4 (\cf9 self\cf4 ):\
+        \cf2 return True\
+\
+    def \cf12 has_perm\cf4 (\cf9 self\cf4 , perm, \cf13 obj=None\cf4 ):\
+        \cf2 if \cf9 self\cf4 .role == EnumUserRoles.ADMIN:\
+            \cf2 return True\
+\
+        if \cf9 self\cf4 .role == EnumUserRoles.EDITOR:\
+            restricted = [\cf5 "user"\cf4 , \cf5 "transaction"\cf4 ]\
+            \cf2 return not \cf14 any\cf4 (r \cf2 in \cf4 perm \cf2 for \cf4 r \cf2 in \cf4 restricted)\
+\
+        \cf2 return False\
+\
+    def \cf12 has_module_perms\cf4 (\cf9 self\cf4 , \cf13 app_label\cf4 ):\
+        \cf2 return \cf9 self\cf4 .role \cf2 in \cf4 [EnumUserRoles.ADMIN, EnumUserRoles.EDITOR]\
+\
+    \cf2 def \cf12 set_password\cf4 (\cf9 self\cf4 , raw_password):\
+        \cf9 self\cf4 .password_hash = pwd_context.hash(raw_password)\
+\
+    \cf2 def \cf12 check_password\cf4 (\cf9 self\cf4 , raw_password):\
+        \cf2 if not \cf9 self\cf4 .password_hash:\
+            \cf2 return False\
+        return \cf4 pwd_context.verify(raw_password, \cf9 self\cf4 .password_hash)\
+\
+    objects = UserManager()\
+\
+    USERNAME_FIELD = \cf5 "email"\
+    \cf4 REQUIRED_FIELDS = []\
+\
+\
+\cf2 class \cf4 News(models.Model):\
+    title = models.CharField(\cf5 "\uc0\u1047 \u1072 \u1075 \u1086 \u1083 \u1086 \u1074 \u1086 \u1082 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    body = models.CharField(\cf5 "\uc0\u1057 \u1086 \u1076 \u1077 \u1088 \u1078 \u1072 \u1085 \u1080 \u1077 "\cf4 , \cf6 max_length\cf4 =\cf7 512\cf4 )\
+    image_url = models.ImageField(\cf5 "URL \uc0\u1080 \u1079 \u1086 \u1073 \u1088 \u1072 \u1078 \u1077 \u1085 \u1080 \u1103 "\cf4 , \cf6 upload_to\cf4 =upload_news_photo, \cf6 max_length\cf4 =\cf7 256\cf4 )\
+    created_at = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1089 \u1086 \u1079 \u1076 \u1072 \u1085 \u1080 \u1103 "\cf4 , \cf6 auto_now_add\cf4 =\cf2 True\cf4 )\
+    updated_at = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1086 \u1073 \u1085 \u1086 \u1074 \u1083 \u1077 \u1085 \u1080 \u1103 "\cf4 , \cf6 auto_now\cf4 =\cf2 True\cf4 )\
+    user = models.ForeignKey(User, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1056 \u1077 \u1076 \u1072 \u1082 \u1090 \u1086 \u1088 "\cf4 , \cf6 on_delete\cf4 =models.DO_NOTHING)\
+    ac = models.ForeignKey(ApartmentComplex, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1046 \u1050 "\cf4 , \cf6 on_delete\cf4 =models.SET_NULL, \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'news'\
+        \cf4 verbose_name = \cf5 "\uc0\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1100 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1053 \u1086 \u1074 \u1086 \u1089 \u1090 \u1080 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .title\
+\
+\
+\cf2 class \cf4 Sector(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1089 \u1077 \u1082 \u1090 \u1086 \u1088 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 64\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    floors = models.IntegerField(\cf5 "\uc0\u1069 \u1090 \u1072 \u1078 \u1077 \u1081 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    ac = models.ForeignKey(ApartmentComplex, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1046 \u1050 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    house = models.CharField(\cf5 "\uc0\u1044 \u1086 \u1084 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    street = models.CharField(\cf5 "\uc0\u1059 \u1083 \u1080 \u1094 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    building = models.CharField(\cf5 "\uc0\u1057 \u1090 \u1088 \u1086 \u1077 \u1085 \u1080 \u1077 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'sectors'\
+        \cf4 verbose_name = \cf5 "\uc0\u1057 \u1077 \u1082 \u1090 \u1086 \u1088 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1057 \u1077 \u1082 \u1090 \u1086 \u1088 \u1072 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf5 f"\cf2 \{\cf9 self\cf4 .name\cf2 \}\cf5  \uc0\u1046 \u1050 :\cf2 \{\cf9 self\cf4 .ac\cf2 \}\cf5 "\
+\
+\
+\cf2 class \cf4 Amenity(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1091 \u1076 \u1086 \u1073 \u1089 \u1090 \u1074 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'amenities'\
+        \cf4 verbose_name = \cf5 "\uc0\u1059 \u1076 \u1086 \u1073 \u1089 \u1090 \u1074 \u1086  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1059 \u1076 \u1086 \u1073 \u1089 \u1090 \u1074 \u1072  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .name\
+\
+\
+\cf2 class \cf4 Flat(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    number = models.CharField(\cf5 "\uc0\u1053 \u1086 \u1084 \u1077 \u1088 "\cf4 )\
+    floor = models.IntegerField(\cf5 "\uc0\u1069 \u1090 \u1072 \u1078 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    home_area = models.FloatField(\cf5 "\uc0\u1055 \u1083 \u1086 \u1097 \u1072 \u1076 \u1100  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    kitchen_area = models.FloatField(\cf5 "\uc0\u1055 \u1083 \u1086 \u1097 \u1072 \u1076 \u1100  \u1082 \u1091 \u1093 \u1085 \u1080 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    height = models.FloatField(\cf5 "\uc0\u1042 \u1099 \u1089 \u1086 \u1090 \u1072  \u1087 \u1086 \u1090 \u1086 \u1083 \u1082 \u1072 "\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    comment = models.CharField(\cf5 "\uc0\u1050 \u1086 \u1084 \u1084 \u1077 \u1085 \u1090 \u1072 \u1088 \u1080 \u1081 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    description = models.CharField(\cf5 "\uc0\u1054 \u1087 \u1080 \u1089 \u1072 \u1085 \u1080 \u1077 "\cf4 , \cf6 max_length\cf4 =\cf7 512\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    status = models.CharField(\cf5 "\uc0\u1057 \u1090 \u1072 \u1090 \u1091 \u1089 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumFlatStatus.choices,\
+                              \cf6 default\cf4 =EnumFlatStatus.UNOCCUPIED)\
+    window_view = models.CharField(\cf5 "\uc0\u1042 \u1080 \u1076  \u1080 \u1079  \u1086 \u1082 \u1085 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumWindowViews.choices,\
+                                   \cf6 default\cf4 =EnumWindowViews.BOTH)\
+    image_plan = models.ImageField(\cf5 "\uc0\u1055 \u1083 \u1072 \u1085 \u1080 \u1088 \u1086 \u1074 \u1082 \u1072  URL"\cf4 , \cf6 upload_to\cf4 =upload_flat_image_plan, \cf6 max_length\cf4 =\cf7 256\cf4 , \cf6 null\cf4 =\cf2 True\cf4 ,\
+                                   \cf6 blank\cf4 =\cf2 True\cf4 )\
+    sector = models.ForeignKey(Sector, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1057 \u1077 \u1082 \u1090 \u1086 \u1088 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    amenities = models.ManyToManyField(Amenity, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1059 \u1076 \u1086 \u1073 \u1089 \u1090 \u1074 \u1072 "\cf4 , \cf6 db_table\cf4 =\cf5 "flat_amenities"\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'flats'\
+        \cf4 verbose_name = \cf5 "\uc0\u1050 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1072 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1050 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf5 f"\cf2 \{\cf9 self\cf4 .name\cf2 \} \{\cf9 self\cf4 .sector.ac\cf2 \}\cf5 "\
+\
+\
+\cf2 class \cf4 FlatImages(models.Model):\
+    image_url = models.ImageField(\cf5 "URL \uc0\u1080 \u1079 \u1086 \u1073 \u1088 \u1072 \u1078 \u1077 \u1085 \u1080 \u1103 "\cf4 , \cf6 upload_to\cf4 =upload_flat_images, \cf6 max_length\cf4 =\cf7 256\cf4 )\
+    flat = models.ForeignKey(Flat, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1050 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1072 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'flat_images'\
+        \cf4 verbose_name = \cf5 "\uc0\u1060 \u1086 \u1090 \u1086  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1060 \u1086 \u1090 \u1086  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\
+\
+\
+\cf2 class \cf4 FlatExpenses(models.Model):\
+    title = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1090 \u1088 \u1072 \u1090 \u1099 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    amount = models.FloatField(\cf5 "\uc0\u1057 \u1091 \u1084 \u1084 \u1072 "\cf4 )\
+    flat = models.ForeignKey(Flat, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1050 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1072 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'flat_expenses'\
+        \cf4 verbose_name = \cf5 "\uc0\u1045 \u1078 \u1077 \u1084 \u1077 \u1089 \u1103 \u1095 \u1085 \u1099 \u1081  \u1088 \u1072 \u1089 \u1093 \u1086 \u1076  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1099 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1045 \u1078 \u1077 \u1084 \u1077 \u1089 \u1103 \u1095 \u1085 \u1099 \u1077  \u1088 \u1072 \u1089 \u1093 \u1086 \u1076 \u1099  \u1082 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 "\
+\
+\
+\cf2 class \cf4 Contract(models.Model):\
+    contract_number = models.CharField(\cf5 "\uc0\u1053 \u1086 \u1084 \u1077 \u1088  \u1082 \u1086 \u1085 \u1090 \u1088 \u1072 \u1082 \u1090 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    default_amount = models.FloatField(\cf5 "\uc0\u1057 \u1091 \u1084 \u1084 \u1072  \u1087 \u1086  \u1091 \u1084 \u1086 \u1083 \u1095 \u1072 \u1085 \u1080 \u1102 "\cf4 )\
+    deposit_amount = models.FloatField(\cf5 "\uc0\u1047 \u1072 \u1076 \u1072 \u1090 \u1086 \u1082 "\cf4 )\
+    contract_link = models.FileField(\cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1088 \u1072 \u1082 \u1090 "\cf4 , \cf6 upload_to\cf4 =upload_contract_file, \cf6 max_length\cf4 =\cf7 256\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    owner_email = models.CharField(\cf5 "\uc0\u1055 \u1086 \u1095 \u1090 \u1072  \u1072 \u1088 \u1077 \u1085 \u1076 \u1072 \u1090 \u1086 \u1088 \u1072 "\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 )\
+    start_date = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1085 \u1072 \u1095 \u1072 \u1083 \u1072 "\cf4 )\
+    end_date = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1086 \u1082 \u1086 \u1085 \u1095 \u1072 \u1085 \u1080 \u1103 "\cf4 )\
+    created_at = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1089 \u1086 \u1079 \u1076 \u1072 \u1085 \u1080 \u1103 "\cf4 , \cf6 auto_now_add\cf4 =\cf2 True\cf4 )\
+    updated_at = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1086 \u1073 \u1085 \u1086 \u1074 \u1083 \u1077 \u1085 \u1080 \u1103 "\cf4 , \cf6 auto_now\cf4 =\cf2 True\cf4 )\
+    flat = models.ForeignKey(Flat, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1050 \u1074 \u1072 \u1088 \u1090 \u1080 \u1088 \u1072 "\cf4 , \cf6 on_delete\cf4 =models.DO_NOTHING)\
+    users = models.ManyToManyField(User, \cf6 through\cf4 =\cf5 "ContractUser"\cf4 , \cf6 verbose_name\cf4 =\cf5 "\uc0\u1055 \u1086 \u1083 \u1100 \u1079 \u1086 \u1074 \u1072 \u1090 \u1077 \u1083 \u1080 "\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'contracts'\
+        \cf4 verbose_name = \cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1088 \u1072 \u1082 \u1090 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1088 \u1072 \u1082 \u1090 \u1099 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .contract_number\
+\
+\
+\cf2 class \cf4 ContractUser(models.Model):\
+    contract = models.ForeignKey(\
+        Contract,\
+        \cf6 on_delete\cf4 =models.CASCADE,\
+    )\
+    user = models.ForeignKey(\
+        User,\
+        \cf6 on_delete\cf4 =models.CASCADE,\
+    )\
+    role = models.CharField(\
+        \cf6 max_length\cf4 =\cf7 32\cf4 ,\
+        \cf6 choices\cf4 =EnumContractUserRoles.choices,\
+    )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 "contract_users"\
+\
+\
+\cf2 class \cf4 ContractPayment(models.Model):\
+    due_date = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1086 \u1087 \u1083 \u1072 \u1090 \u1099 "\cf4 )\
+    created_at = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1089 \u1086 \u1079 \u1076 \u1072 \u1085 \u1080 \u1103 "\cf4 )\
+    status = models.CharField(\cf5 "\uc0\u1057 \u1090 \u1072 \u1090 \u1091 \u1089  \u1086 \u1087 \u1083 \u1072 \u1090 \u1099 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumContractPaymentStatus.choices)\
+    payment_number = models.CharField(\cf5 "\uc0\u1053 \u1086 \u1084 \u1077 \u1088  \u1086 \u1087 \u1083 \u1072 \u1090 \u1099 "\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    payment_link = models.CharField(\cf5 "\uc0\u1057 \u1089 \u1099 \u1083 \u1082 \u1072  \u1085 \u1072  \u1089 \u1095 \u1105 \u1090  \u1086 \u1087 \u1083 \u1072 \u1090 \u1099 "\cf4 , \cf6 max_length\cf4 =\cf7 256\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+    contract = models.ForeignKey(Contract, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1088 \u1072 \u1082 \u1090 "\cf4 , \cf6 on_delete\cf4 =models.DO_NOTHING)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'contract_payments'\
+        \cf4 verbose_name = \cf5 "\uc0\u1057 \u1095 \u1077 \u1090 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1057 \u1095 \u1077 \u1090 \u1072 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .contract.contract_number\
+\
+\
+\cf2 class \cf4 ContractPaymentItem(models.Model):\
+    description = models.CharField(\cf5 "\uc0\u1054 \u1087 \u1080 \u1089 \u1072 \u1085 \u1080 \u1077  \u1087 \u1088 \u1077 \u1076 \u1084 \u1077 \u1090 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    amount = models.FloatField(\cf5 "\uc0\u1057 \u1091 \u1084 \u1084 \u1072 "\cf4 )\
+    contract_payment = models.ForeignKey(ContractPayment, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1057 \u1095 \u1077 \u1090 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'contract_payment_items'\
+        \cf4 verbose_name = \cf5 "\uc0\u1055 \u1088 \u1077 \u1076 \u1084 \u1077 \u1090  \u1089 \u1095 \u1105 \u1090 \u1072 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1055 \u1088 \u1077 \u1076 \u1084 \u1077 \u1090  \u1089 \u1095 \u1105 \u1090 \u1072 "\
+\
+\
+\cf2 class \cf4 Transaction(models.Model):\
+    amount = models.FloatField(\cf5 "\uc0\u1057 \u1091 \u1084 \u1084 \u1072 "\cf4 )\
+    payment_date = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1087 \u1083 \u1072 \u1090 \u1077 \u1078 \u1072 "\cf4 )\
+    contract_payment = models.ForeignKey(ContractPayment, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1057 \u1095 \u1077 \u1090 "\cf4 , \cf6 on_delete\cf4 =models.DO_NOTHING)\
+    user = models.ForeignKey(User, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1055 \u1086 \u1083 \u1100 \u1079 \u1086 \u1074 \u1072 \u1090 \u1077 \u1083 \u1100 "\cf4 , \cf6 on_delete\cf4 =models.DO_NOTHING)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'transactions'\
+        \cf4 verbose_name = \cf5 "\uc0\u1058 \u1088 \u1072 \u1085 \u1079 \u1072 \u1082 \u1094 \u1080 \u1103 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1058 \u1088 \u1072 \u1085 \u1079 \u1072 \u1082 \u1094 \u1080 \u1080 "\
+\
+\
+\cf2 class \cf4 Subway(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1089 \u1090 \u1072 \u1085 \u1094 \u1080 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 64\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'subways'\
+        \cf4 verbose_name = \cf5 "\uc0\u1052 \u1077 \u1090 \u1088 \u1086 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1052 \u1077 \u1090 \u1088 \u1086 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .name\
+\
+\
+\cf2 class \cf4 SubwayAC(models.Model):\
+    ac = models.ForeignKey(ApartmentComplex, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1046 \u1050 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    subway = models.ForeignKey(Subway, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1057 \u1090 \u1072 \u1085 \u1094 \u1080 \u1103  \u1084 \u1077 \u1090 \u1088 \u1086 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    how_long = models.IntegerField(\cf5 "\uc0\u1042 \u1088 \u1077 \u1084 \u1103  \u1076 \u1086  \u1089 \u1090 \u1072 \u1085 \u1094 \u1080 \u1080  (\u1084 \u1080 \u1085 )"\cf4 )\
+    type = models.CharField(\cf5 "\uc0\u1058 \u1080 \u1087  \u1087 \u1077 \u1088 \u1077 \u1076 \u1074 \u1080 \u1078 \u1077 \u1085 \u1080 \u1103 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumSubwayTypes.choices)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'subways_acs'\
+        \cf4 verbose_name = \cf5 "\uc0\u1052 \u1077 \u1090 \u1088 \u1086 -\u1046 \u1050 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1052 \u1077 \u1090 \u1088 \u1086 -\u1046 \u1050 "\
+\
+\
+\cf2 class \cf4 ApplicationCategory(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1082 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'application_categories'\
+        \cf4 verbose_name = \cf5 "\uc0\u1050 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1103  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1050 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1080  \u1079 \u1072 \u1103 \u1074 \u1086 \u1082 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .name\
+\
+\
+\cf2 class \cf4 ApplicationSubcategory(models.Model):\
+    name = models.CharField(\cf5 "\uc0\u1053 \u1072 \u1079 \u1074 \u1072 \u1085 \u1080 \u1077  \u1087 \u1086 \u1076 \u1082 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    category = models.ForeignKey(ApplicationCategory, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1050 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1103 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'application_subcategories'\
+        \cf4 verbose_name = \cf5 "\uc0\u1055 \u1086 \u1076 \u1082 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1103  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1055 \u1086 \u1076 \u1082 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1080  \u1079 \u1072 \u1103 \u1074 \u1086 \u1082 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .name\
+\
+\
+\cf2 class \cf4 Application(models.Model):\
+    created_at = models.DateTimeField(\cf5 "\uc0\u1044 \u1072 \u1090 \u1072  \u1089 \u1086 \u1079 \u1076 \u1072 \u1085 \u1080 \u1103 "\cf4 )\
+    status = models.CharField(\cf5 "\uc0\u1057 \u1090 \u1072 \u1090 \u1091 \u1089  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumApplicationStatus.choices)\
+    priority = models.CharField(\cf5 "\uc0\u1055 \u1088 \u1080 \u1086 \u1088 \u1080 \u1090 \u1077 \u1090 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumApplicationPriority.choices)\
+    contract = models.ForeignKey(Contract, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1088 \u1072 \u1082 \u1090 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    subcategory = models.ForeignKey(ApplicationSubcategory, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1055 \u1086 \u1076 \u1082 \u1072 \u1090 \u1077 \u1075 \u1086 \u1088 \u1080 \u1103 "\cf4 , \cf6 on_delete\cf4 =models.DO_NOTHING)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'applications'\
+        \cf4 verbose_name = \cf5 "\uc0\u1047 \u1072 \u1103 \u1074 \u1082 \u1072 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1047 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .contract.contract_number\
+\
+\
+\cf2 class \cf4 ApplicationParticipant(models.Model):\
+    application = models.ForeignKey(\cf5 "Application"\cf4 , \cf6 verbose_name\cf4 =\cf5 "\uc0\u1047 \u1072 \u1103 \u1074 \u1082 \u1072 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    user = models.ForeignKey(\cf5 "User"\cf4 , \cf6 verbose_name\cf4 =\cf5 "\uc0\u1055 \u1086 \u1083 \u1100 \u1079 \u1086 \u1074 \u1072 \u1090 \u1077 \u1083 \u1100 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+    role = models.CharField(\cf5 "\uc0\u1056 \u1086 \u1083 \u1100  \u1091 \u1095 \u1072 \u1089 \u1090 \u1085 \u1080 \u1082 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumApplicationParticipants.choices)\
+    comment = models.CharField(\cf5 "\uc0\u1050 \u1086 \u1084 \u1084 \u1077 \u1085 \u1090 \u1072 \u1088 \u1080 \u1081 "\cf4 , \cf6 max_length\cf4 =\cf7 512\cf4 , \cf6 blank\cf4 =\cf2 True\cf4 , \cf6 null\cf4 =\cf2 True\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 "application_participants"\
+        \cf4 unique_together = ((\cf5 "application"\cf4 , \cf5 "user"\cf4 ),)\
+        verbose_name = \cf5 "\uc0\u1059 \u1095 \u1072 \u1089 \u1090 \u1085 \u1080 \u1082  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1059 \u1095 \u1072 \u1089 \u1090 \u1085 \u1080 \u1082 \u1080  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .application.contract.contract_number\
+\
+\
+\cf2 class \cf4 ApplicationFile(models.Model):\
+    file_url = models.FileField(\cf5 "URL \uc0\u1092 \u1072 \u1081 \u1083 \u1072 "\cf4 , \cf6 upload_to\cf4 =upload_to_app_files, \cf6 max_length\cf4 =\cf7 512\cf4 )\
+    created_by = models.CharField(\cf5 "\uc0\u1060 \u1072 \u1081 \u1083  \u1086 \u1090 \u1087 \u1088 \u1072 \u1074 \u1080 \u1083 "\cf4 , \cf6 max_length\cf4 =\cf7 32\cf4 , \cf6 choices\cf4 =EnumFileCreatedBy.choices)\
+    file_type = models.CharField(\cf5 "\uc0\u1058 \u1080 \u1087  \u1092 \u1072 \u1081 \u1083 \u1072 "\cf4 , \cf6 max_length\cf4 =\cf7 128\cf4 )\
+    application = models.ForeignKey(Application, \cf6 verbose_name\cf4 =\cf5 "\uc0\u1047 \u1072 \u1103 \u1074 \u1082 \u1072 "\cf4 , \cf6 on_delete\cf4 =models.CASCADE)\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'application_files'\
+        \cf4 verbose_name = \cf5 "\uc0\u1060 \u1072 \u1081 \u1083  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1060 \u1072 \u1081 \u1083 \u1099  \u1079 \u1072 \u1103 \u1074 \u1082 \u1080 "\
+\
+    \cf2 def \cf8 __str__\cf4 (\cf9 self\cf4 ):\
+        \cf2 return \cf9 self\cf4 .application.contract.contract_number\
+\
+    \cf2 def \cf12 save\cf4 (\cf9 self\cf4 , *args, **kwargs):\
+        \cf2 if \cf9 self\cf4 .file_url \cf2 and \cf14 hasattr\cf4 (\cf9 self\cf4 .file_url, \cf5 'name'\cf4 ):\
+            mime_type, _ = mimetypes.guess_type(\cf9 self\cf4 .file_url.name)\
+            \cf9 self\cf4 .file_type = mime_type\
+\
+        \cf14 super\cf4 ().save(*args, **kwargs)\
+\
+\
+\cf2 class \cf4 ManagementContacts(models.Model):\
+    office_phone_number = models.CharField(\cf5 "\uc0\u1058 \u1077 \u1083 \u1077 \u1092 \u1086 \u1085  \u1090 \u1077 \u1093  \u1087 \u1086 \u1076 \u1076 \u1077 \u1088 \u1078 \u1082 \u1080 "\cf4 )\
+    contact_link = models.CharField(\cf5 "\uc0\u1057 \u1089 \u1099 \u1083 \u1082 \u1072  \u1076 \u1083 \u1103  \u1089 \u1074 \u1103 \u1079 \u1080 "\cf4 )\
+    office_email = models.CharField(\cf5 "\uc0\u1069 \u1083 \u1077 \u1082 \u1090 \u1088 \u1086 \u1085 \u1085 \u1072 \u1103  \u1087 \u1086 \u1095 \u1090 \u1072 "\cf4 )\
+    office_address = models.CharField(\cf5 "\uc0\u1070 \u1088 \u1080 \u1076 \u1080 \u1095 \u1077 \u1089 \u1082 \u1080 \u1081  \u1072 \u1076 \u1088 \u1077 \u1089 "\cf4 )\
+\
+    \cf2 class \cf4 Meta:\
+        managed = \cf2 False\
+        \cf4 db_table = \cf5 'management_contacts'\
+        \cf4 verbose_name = \cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1072 \u1082 \u1090  \u1091 \u1087 \u1088 \u1072 \u1074 \u1083 \u1103 \u1102 \u1097 \u1077 \u1081  \u1082 \u1086 \u1084 \u1087 \u1072 \u1085 \u1080 \u1080 "\
+        \cf4 verbose_name_plural = \cf5 "\uc0\u1050 \u1086 \u1085 \u1090 \u1072 \u1082 \u1090 \u1099  \u1091 \u1087 \u1088 \u1072 \u1074 \u1083 \u1103 \u1102 \u1097 \u1077 \u1081  \u1082 \u1086 \u1084 \u1087 \u1072 \u1085 \u1080 \u1080 "\
+\
+\cf2 class \cf4 EnumUserRoles(models.TextChoices):\
+    ADMIN = \cf5 "ADMIN"\cf4 , \cf5 "\uc0\u1040 \u1076 \u1084 \u1080 \u1085 \u1080 \u1089 \u1090 \u1088 \u1072 \u1090 \u1086 \u1088 "\
+    \cf4 TENANT = \cf5 "TENANT"\cf4 , \cf5 "\uc0\u1040 \u1088 \u1077 \u1085 \u1076 \u1072 \u1090 \u1086 \u1088 "\
+    \cf4 STUFF = \cf5 "STUFF"\cf4 , \cf5 "\uc0\u1055 \u1077 \u1088 \u1089 \u1086 \u1085 \u1072 \u1083 "\
+    \cf4 EDITOR = \cf5 "EDITOR"\cf4 , \cf5 "\uc0\u1056 \u1077 \u1076 \u1072 \u1082 \u1090 \u1086 \u1088 "\
+    \cf4 SHAREHOLDER = \cf5 "SHAREHOLDER"\cf4 , \cf5 "\uc0\u1040 \u1082 \u1094 \u1080 \u1086 \u1085 \u1077 \u1088 "\
+\
+\
+\cf2 class \cf4 EnumUserTypes(models.TextChoices):\
+    LEGAL_ENTITY = \cf5 "LEGAL_ENTITY"\cf4 , \cf5 "\uc0\u1070 \u1088 . \u1083 \u1080 \u1094 \u1086 "\
+    \cf4 NATURAL_PERSON = \cf5 "NATURAL_PERSON"\cf4 , \cf5 "\uc0\u1060 \u1080 \u1079 . \u1083 \u1080 \u1094 \u1086 "\
+\
+\
+\cf2 class \cf4 EnumFlatStatus(models.TextChoices):\
+    OCCUPIED = \cf5 "OCCUPIED"\cf4 , \cf5 "\uc0\u1047 \u1072 \u1085 \u1103 \u1090 \u1072 "\
+    \cf4 UNOCCUPIED = \cf5 "UNOCCUPIED"\cf4 , \cf5 "\uc0\u1057 \u1074 \u1086 \u1073 \u1086 \u1076 \u1085 \u1072 "\
+    \cf4 RENOVATING = \cf5 "RENOVATING"\cf4 , \cf5 "\uc0\u1056 \u1077 \u1084 \u1086 \u1085 \u1090 "\
+\
+\
+\cf2 class \cf4 EnumWindowViews(models.TextChoices):\
+    COURTYARD = \cf5 "COURTYARD"\cf4 , \cf5 "\uc0\u1042 \u1086  \u1076 \u1074 \u1086 \u1088 "\
+    \cf4 STREET = \cf5 "STREET"\cf4 , \cf5 "\uc0\u1053 \u1072  \u1091 \u1083 \u1080 \u1094 \u1091 "\
+    \cf4 BOTH = \cf5 "BOTH"\cf4 , \cf5 "\uc0\u1054 \u1073 \u1072  \u1074 \u1080 \u1076 \u1072 "\
+\
+\
+\cf2 class \cf4 EnumContractPaymentStatus(models.TextChoices):\
+    WAITING = \cf5 "WAITING"\cf4 , \cf5 "\uc0\u1054 \u1078 \u1080 \u1076 \u1072 \u1077 \u1090 \u1089 \u1103 "\
+    \cf4 PENDING = \cf5 "PENDING"\cf4 , \cf5 "\uc0\u1042  \u1087 \u1088 \u1086 \u1094 \u1077 \u1089 \u1089 \u1077 "\
+    \cf4 PAYED = \cf5 "PAYED"\cf4 , \cf5 "\uc0\u1054 \u1087 \u1083 \u1072 \u1095 \u1077 \u1085 \u1086 "\
+    \cf4 OVERDUE = \cf5 "OVERDUE"\cf4 , \cf5 "\uc0\u1055 \u1088 \u1086 \u1089 \u1088 \u1086 \u1095 \u1077 \u1085 \u1086 "\
+\
+\
+\cf2 class \cf4 EnumSubwayTypes(models.TextChoices):\
+    WALKING = \cf5 "WALKING"\cf4 , \cf5 "\uc0\u1055 \u1077 \u1096 \u1082 \u1086 \u1084 "\
+    \cf4 DRIVING = \cf5 "DRIVING"\cf4 , \cf5 "\uc0\u1053 \u1072  \u1084 \u1072 \u1096 \u1080 \u1085 \u1077 "\
+\
+\
+\cf2 class \cf4 EnumApplicationParticipants(models.TextChoices):\
+    RESPONSIBLE = \cf5 "RESPONSIBLE"\cf4 , \cf5 "\uc0\u1054 \u1090 \u1074 \u1077 \u1090 \u1089 \u1090 \u1074 \u1077 \u1085 \u1085 \u1099 \u1081 "\
+    \cf4 TENANT = \cf5 "TENANT"\cf4 , \cf5 "\uc0\u1040 \u1088 \u1077 \u1085 \u1076 \u1072 \u1090 \u1086 \u1088 "\
+    \cf4 STUFF = \cf5 "STUFF"\cf4 , \cf5 "\uc0\u1057 \u1086 \u1090 \u1088 \u1091 \u1076 \u1085 \u1080 \u1082 "\
+\
+\
+\cf2 class \cf4 EnumFileCreatedBy(models.TextChoices):\
+    TENANT = \cf5 "TENANT"\cf4 , \cf5 "\uc0\u1040 \u1088 \u1077 \u1085 \u1076 \u1072 \u1090 \u1086 \u1088 "\
+    \cf4 STUFF = \cf5 "STUFF"\cf4 , \cf5 "\uc0\u1057 \u1086 \u1090 \u1088 \u1091 \u1076 \u1085 \u1080 \u1082 "\
+\
+\
+\cf2 class \cf4 EnumApplicationStatus(models.TextChoices):\
+    OPENED = \cf5 "OPENED"\cf4 , \cf5 "\uc0\u1054 \u1090 \u1082 \u1088 \u1099 \u1090 \u1072 "\
+    \cf4 WAITING = \cf5 "WAITING"\cf4 , \cf5 "\uc0\u1042  \u1086 \u1078 \u1080 \u1076 \u1072 \u1085 \u1080 \u1080 "\
+    \cf4 CLOSED = \cf5 "CLOSED"\cf4 , \cf5 "\uc0\u1047 \u1072 \u1082 \u1088 \u1099 \u1090 \u1072 "\
+    \cf4 POSTPONED = \cf5 "POSTPONED"\cf4 , \cf5 "\uc0\u1054 \u1090 \u1083 \u1086 \u1078 \u1077 \u1085 \u1072 "\
+\
+\
+\cf2 class \cf4 EnumApplicationPriority(models.TextChoices):\
+    LOW = \cf5 "LOW"\cf4 , \cf5 "\uc0\u1053 \u1080 \u1079 \u1082 \u1080 \u1081 "\
+    \cf4 MEDIUM = \cf5 "MEDIUM"\cf4 , \cf5 "\uc0\u1057 \u1088 \u1077 \u1076 \u1085 \u1080 \u1081 "\
+    \cf4 HIGH = \cf5 "HIGH"\cf4 , \cf5 "\uc0\u1042 \u1099 \u1089 \u1086 \u1082 \u1080 \u1081 "\
+\
+\
+\cf2 class \cf4 EnumParkingTypes(models.TextChoices):\
+    UNDERGROUND = \cf5 "UNDERGROUND"\cf4 , \cf5 "\uc0\u1055 \u1086 \u1076 \u1079 \u1077 \u1084 \u1085 \u1099 \u1081 "\
+    \cf4 ABOVEGROUND = \cf5 "ABOVEGROUND"\cf4 , \cf5 "\uc0\u1053 \u1072 \u1079 \u1077 \u1084 \u1085 \u1099 \u1081 "\
+    \cf4 MULTILEVEL = \cf5 "MULTILEVEL"\cf4 , \cf5 "\uc0\u1052 \u1085 \u1086 \u1075 \u1086 \u1091 \u1088 \u1086 \u1074 \u1085 \u1077 \u1074 \u1099 \u1081 "\
+\
+\
+\cf2 class \cf4 EnumContractUserRoles(models.TextChoices):\
+    TENANT = \cf5 "TENANT"\cf4 , \cf5 "\uc0\u1040 \u1088 \u1077 \u1085 \u1076 \u1072 \u1090 \u1086 \u1088 "\
+    \cf4 RESIDENT = \cf5 "RESIDENT"\cf4 , \cf5 "\uc0\u1055 \u1088 \u1086 \u1078 \u1080 \u1074 \u1072 \u1102 \u1097 \u1080 \u1081 "\
+}
