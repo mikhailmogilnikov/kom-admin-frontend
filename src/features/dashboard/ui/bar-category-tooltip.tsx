@@ -1,10 +1,8 @@
 import type { ReactNode } from "react";
-import type { TooltipProps } from "recharts";
 
-type BarCategoryTooltipProps<T extends { name: string }> = TooltipProps<
-  number,
-  string
-> & {
+type BarCategoryTooltipProps<T extends { name: string }> = {
+  active?: boolean;
+  payload?: Array<{ payload?: T }>;
   renderDetails: (row: T) => ReactNode;
 };
 

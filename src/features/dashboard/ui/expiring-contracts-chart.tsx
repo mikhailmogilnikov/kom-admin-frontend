@@ -62,8 +62,15 @@ const contractWordForms = {
   other: "договоров",
 } as const;
 
-const pluralizeContracts = (count: number) =>
-  contractWordForms[contractPlural.select(count)];
+const pluralizeContracts = (count: number) => {
+  const rule = contractPlural.select(count);
+
+  if (rule === "one" || rule === "few" || rule === "many" || rule === "other") {
+    return contractWordForms[rule];
+  }
+
+  return contractWordForms.other;
+};
 
 type ExpiringContractsChartProps = {
   selectedComplex?: string;
