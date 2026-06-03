@@ -1,5 +1,4 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useSession } from "@/features/auth/model/use-session";
 
 const PublicLayoutComponent = () => (
   <div className="flex min-h-screen flex-col">
@@ -10,12 +9,9 @@ const PublicLayoutComponent = () => (
 );
 
 export const Route = createFileRoute("/_public")({
-  beforeLoad: () => {
-    const isAuthenticated = useSession.getState().session !== null;
-    if (isAuthenticated) {
-      throw redirect({
-        to: "/",
-      });
+  beforeLoad: ({ context: { session } }) => {
+    if (session) {
+      throw redirect({ to: "/" });
     }
   },
   component: PublicLayoutComponent,

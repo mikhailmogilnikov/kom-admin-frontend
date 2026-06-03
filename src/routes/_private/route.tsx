@@ -1,5 +1,6 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { useSession } from "@/features/auth/model/use-session";
+
+import type { TokenPayload } from "@/features/auth/lib/decode-token";
 import { Header } from "@/features/header/ui/header";
 
 const PrivateLayoutComponent = () => (
@@ -11,11 +12,21 @@ const PrivateLayoutComponent = () => (
   </div>
 );
 
-export const Route = createFileRoute("/_private")({
-  beforeLoad: () => {
-    const isAuthenticated = useSession.getState().session !== null;
+const isAdminSession = (session: TokenPayload | null): boolean => {
+  if (!session) {
+    return false;
+  }
 
-    if (!isAuthenticated) {
+  if (!session.role) {
+    return true;
+  }
+
+  return session.role === "admin";
+};
+
+export const Route = createFileRoute("/_private")({
+  beforeLoad: ({ context: { session }, location }) => {
+    if (!isAdminSession(session)) {
       throw redirect({
         to: "/login",
         search: {

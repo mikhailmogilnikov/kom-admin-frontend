@@ -1,8 +1,11 @@
 import { jwtDecode } from "jwt-decode";
 
+import type { components } from "@/shared/api/schema";
+
 export type TokenPayload = {
-  sub: number;
+  sub: string | number;
   exp: number;
+  role?: components["schemas"]["EnumUserRoles"];
 };
 
 export type Token = string;

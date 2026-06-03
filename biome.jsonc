@@ -6,7 +6,9 @@
       "**/*",
       "!**/routeTree.gen.ts",
       "!src/app/globals.css",
-      "!src/app/css/**/*.css"
+      "!src/app/css/**/*.css",
+      "!src/shared/api/schema.ts",
+      "!src/shared/api/openapi.json"
     ]
   },
   "linter": {

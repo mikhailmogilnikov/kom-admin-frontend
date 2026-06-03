@@ -6,6 +6,7 @@ import type { Theme } from "../hooks/use-theme.tsx";
 export type LocalStorageSchema = {
   theme: Theme;
   access_token: Token;
+  refresh_token: string;
 };
 
 export const LocalStorage = new TypedLocalStore<LocalStorageSchema>({

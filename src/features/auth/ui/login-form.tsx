@@ -25,7 +25,13 @@ import {
 } from "@/shared/ui/input-group";
 
 export const LoginForm = () => {
-  const { form, showPassword, togglePasswordVisibility } = useLogin();
+  const {
+    form,
+    showPassword,
+    togglePasswordVisibility,
+    authError,
+    isSubmitting,
+  } = useLogin();
 
   return (
     <Card className="w-full sm:max-w-md">
@@ -118,16 +124,21 @@ export const LoginForm = () => {
               name="password"
             />
           </FieldGroup>
+          {authError ? (
+            <p className="mt-4 text-destructive text-sm" role="alert">
+              {authError}
+            </p>
+          ) : null}
         </form>
       </CardContent>
       <CardFooter>
         <Button
           className="w-full"
-          disabled={form.state.isSubmitting}
+          disabled={isSubmitting}
           form="login-form"
           type="submit"
         >
-          {form.state.isSubmitting ? "Вход..." : "Войти"}
+          {isSubmitting ? "Вход..." : "Войти"}
         </Button>
       </CardFooter>
     </Card>

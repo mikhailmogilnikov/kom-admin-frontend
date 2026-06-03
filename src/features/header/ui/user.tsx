@@ -1,6 +1,12 @@
-import { useNavigate } from "@tanstack/react-router";
 import { LogOut, Monitor, Moon, Palette, Sun } from "lucide-react";
+
 import { useSession } from "@/features/auth/model/use-session";
+import {
+  formatUserDisplayName,
+  formatUserInitials,
+  formatUserSubtitle,
+} from "@/features/header/lib/format-user-display";
+import { fetchQuery } from "@/shared/api/fetch";
 import { type Theme, useTheme } from "@/shared/lib/hooks/use-theme.tsx";
 import { Avatar, AvatarFallback } from "@/shared/ui/avatar";
 import { Button } from "@/shared/ui/button";
@@ -16,30 +22,44 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { Spinner } from "@/shared/ui/spinner";
 
 export const User = () => {
   const { logout } = useSession();
-  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
+
+  const { data: user, isPending } = fetchQuery.useQuery("get", "/user/me");
 
   const handleLogout = () => {
     logout();
-    navigate({ to: "/login" });
   };
+
+  const displayName = user ? formatUserDisplayName(user) : "Пользователь";
+  const subtitle = user ? formatUserSubtitle(user) : "";
+  const initials = user ? formatUserInitials(user) : "—";
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
           className="flex h-12 items-center gap-3 rounded-l-md p-0 pl-2 hover:bg-accent"
+          type="button"
           variant="ghost"
         >
           <div className="flex flex-col text-right max-sm:hidden">
-            <p>Ренат</p>
-            <p className="text-muted-foreground text-xs">admin@example.com</p>
+            <p className="max-w-40 truncate font-medium text-sm">
+              {isPending ? "Загрузка…" : displayName}
+            </p>
+            {subtitle ? (
+              <p className="max-w-40 truncate text-muted-foreground text-xs">
+                {subtitle}
+              </p>
+            ) : null}
           </div>
           <Avatar className="size-11">
-            <AvatarFallback className="text-xs">РМ</AvatarFallback>
+            <AvatarFallback className="text-xs">
+              {isPending ? <Spinner className="size-4" /> : initials}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

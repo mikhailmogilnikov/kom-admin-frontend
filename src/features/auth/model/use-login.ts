@@ -2,6 +2,11 @@ import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { email, object, string } from "zod";
+
+import { fetchQuery } from "@/shared/api/fetch";
+import { publicFetchQuery } from "@/shared/api/public-fetch";
+
+import type { LoginPayload } from "./session.type";
 import { useSession } from "./use-session";
 
 const MIN_EMAIL_LENGTH = 1;
@@ -20,10 +25,17 @@ const formSchema = object({
 });
 
 export const useLogin = () => {
-  const { login } = useSession();
+  const { login, clearSession } = useSession();
   const navigate = useNavigate();
 
+  const loginMutation = publicFetchQuery.useMutation(
+    "post",
+    "/user/email/login"
+  );
+  const meMutation = fetchQuery.useMutation("get", "/user/me");
+
   const [showPassword, setShowPassword] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const form = useForm({
     defaultValues: {
@@ -33,11 +45,39 @@ export const useLogin = () => {
     validators: {
       onSubmit: formSchema,
     },
-    onSubmit: () => {
-      // TODO: REMOVE MOCK TOKEN
-      login(
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.j9agH1qsjVlohO10oie8Wv37y-v68PCprfqB3YTEInM"
-      );
+    onSubmit: async ({ value }) => {
+      setAuthError(null);
+
+      let tokens: LoginPayload;
+
+      try {
+        tokens = await loginMutation.mutateAsync({
+          body: {
+            email: value.email,
+            password: value.password,
+          },
+        });
+      } catch {
+        setAuthError("Неверный email или пароль");
+        return;
+      }
+
+      login(tokens);
+
+      try {
+        const me = await meMutation.mutateAsync({});
+
+        if (me.role !== "admin") {
+          clearSession();
+          setAuthError("Доступ только для администраторов");
+          return;
+        }
+      } catch {
+        clearSession();
+        setAuthError("Не удалось проверить доступ");
+        return;
+      }
+
       navigate({ to: "/" });
     },
   });
@@ -46,9 +86,13 @@ export const useLogin = () => {
     setShowPassword((prev) => !prev);
   };
 
+  const isSubmitting = form.state.isSubmitting || loginMutation.isPending;
+
   return {
     form,
     showPassword,
     togglePasswordVisibility,
+    authError,
+    isSubmitting,
   };
 };
