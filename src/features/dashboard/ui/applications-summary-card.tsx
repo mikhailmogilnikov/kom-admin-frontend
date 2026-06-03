@@ -1,102 +1,122 @@
 import { ClipboardListIcon } from "lucide-react";
+
+import type { components } from "@/shared/api/schema";
+import { cn } from "@/shared/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 
-type ApplicationStatusKey = "OPENED" | "WAITING" | "POSTPONED" | "CLOSED";
+type ApplicationsSummary = components["schemas"]["ApplicationsSummaryResponse"];
 
-type StatusRow = {
-  status: ApplicationStatusKey;
-  label: string;
-  count: number;
-  hint?: string;
+type StatusStyle = {
+  tile: string;
+  count: string;
+  dot: string;
 };
 
-const allComplexesRows: StatusRow[] = [
-  { status: "OPENED", label: "Открытые", count: 18, hint: "в работе" },
-  { status: "WAITING", label: "В ожидании", count: 7 },
-  { status: "POSTPONED", label: "Отложены", count: 4 },
-  { status: "CLOSED", label: "Закрытые", count: 156, hint: "всего" },
-];
-
-const complexesRowsById: Record<string, StatusRow[]> = {
-  "1": [
-    { status: "OPENED", label: "Открытые", count: 5 },
-    { status: "WAITING", label: "В ожидании", count: 2 },
-    { status: "POSTPONED", label: "Отложены", count: 1 },
-    { status: "CLOSED", label: "Закрытые", count: 42, hint: "всего" },
-  ],
-  "2": [
-    { status: "OPENED", label: "Открытые", count: 4 },
-    { status: "WAITING", label: "В ожидании", count: 2 },
-    { status: "POSTPONED", label: "Отложены", count: 0 },
-    { status: "CLOSED", label: "Закрытые", count: 38, hint: "всего" },
-  ],
-  "3": [
-    { status: "OPENED", label: "Открытые", count: 5 },
-    { status: "WAITING", label: "В ожидании", count: 2 },
-    { status: "POSTPONED", label: "Отложены", count: 2 },
-    { status: "CLOSED", label: "Закрытые", count: 40, hint: "всего" },
-  ],
-  "4": [
-    { status: "OPENED", label: "Открытые", count: 4 },
-    { status: "WAITING", label: "В ожидании", count: 1 },
-    { status: "POSTPONED", label: "Отложены", count: 1 },
-    { status: "CLOSED", label: "Закрытые", count: 36, hint: "всего" },
-  ],
+const statusStyles: Record<string, StatusStyle> = {
+  opened: {
+    tile: "border-blue-500/20 bg-blue-500/5",
+    count: "text-blue-700 dark:text-blue-400",
+    dot: "bg-blue-500",
+  },
+  waiting: {
+    tile: "border-amber-500/20 bg-amber-500/5",
+    count: "text-amber-700 dark:text-amber-400",
+    dot: "bg-amber-500",
+  },
+  postponed: {
+    tile: "border-border bg-muted/40",
+    count: "text-muted-foreground",
+    dot: "bg-muted-foreground",
+  },
+  closed: {
+    tile: "border-green-500/20 bg-green-500/5",
+    count: "text-green-700 dark:text-green-400",
+    dot: "bg-green-500",
+  },
 };
 
-const statusAccent: Record<ApplicationStatusKey, string> = {
-  OPENED: "text-blue-600",
-  WAITING: "text-amber-600",
-  POSTPONED: "text-muted-foreground",
-  CLOSED: "text-green-600",
+const defaultStatusStyle: StatusStyle = {
+  tile: "border-border bg-muted/30",
+  count: "text-foreground",
+  dot: "bg-primary",
 };
+
+const getStatusStyle = (status: string): StatusStyle =>
+  statusStyles[status.toLowerCase()] ?? defaultStatusStyle;
 
 type ApplicationsSummaryCardProps = {
-  selectedComplex?: string;
+  summary: ApplicationsSummary;
 };
 
 export const ApplicationsSummaryCard = ({
-  selectedComplex = "all",
+  summary,
 }: ApplicationsSummaryCardProps) => {
-  const rows =
-    selectedComplex === "all"
-      ? allComplexesRows
-      : (complexesRowsById[selectedComplex] ?? allComplexesRows);
-
-  const activeCount = rows
-    .filter((row) => row.status !== "CLOSED")
-    .reduce((sum, row) => sum + row.count, 0);
+  const totalCount = summary.items.reduce((sum, row) => sum + row.count, 0);
 
   return (
-    <Card>
+    <Card className="flex h-full flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="font-medium text-sm">Заявки</CardTitle>
         <ClipboardListIcon className="size-4 text-muted-foreground" />
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <p className="font-bold text-2xl">{activeCount}</p>
-          <p className="text-muted-foreground text-xs">активных заявок</p>
+      <CardContent className="flex flex-1 flex-col gap-5">
+        <div className="flex items-center justify-between gap-4 rounded-xl border bg-linear-to-br from-primary/5 via-background to-muted/30 p-5">
+          <div className="space-y-1">
+            <p className="font-bold text-4xl tabular-nums tracking-tight">
+              {summary.activeCount}
+            </p>
+            <p className="text-muted-foreground text-sm">активных заявок</p>
+            <p className="text-muted-foreground text-xs">
+              {totalCount.toLocaleString("ru-RU")} всего в выборке
+            </p>
+          </div>
+          <div className="flex size-14 shrink-0 items-center justify-center rounded-full border bg-card shadow-sm">
+            <ClipboardListIcon className="size-6 text-primary" />
+          </div>
         </div>
-        <div className="space-y-3 border-t pt-3">
-          {rows.map((row) => (
-            <div
-              className="flex items-center justify-between gap-2"
-              key={row.status}
-            >
-              <div className="min-w-0">
-                <p className="text-sm leading-none">{row.label}</p>
-                {row.hint && (
-                  <p className="text-muted-foreground text-xs">{row.hint}</p>
+
+        <div className="grid flex-1 grid-cols-2 gap-3">
+          {summary.items.map((row) => {
+            const style = getStatusStyle(row.status);
+
+            return (
+              <div
+                className={cn(
+                  "flex flex-col justify-between gap-3 rounded-lg border p-4",
+                  style.tile
                 )}
-              </div>
-              <span
-                className={`font-semibold tabular-nums ${statusAccent[row.status]}`}
+                key={row.status}
               >
-                {row.count}
-              </span>
-            </div>
-          ))}
+                <div className="flex items-start gap-2">
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "mt-1.5 size-2 shrink-0 rounded-full",
+                      style.dot
+                    )}
+                  />
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="font-medium text-sm leading-tight">
+                      {row.label}
+                    </p>
+                    {row.hint ? (
+                      <p className="text-muted-foreground text-xs">
+                        {row.hint}
+                      </p>
+                    ) : null}
+                  </div>
+                </div>
+                <p
+                  className={cn(
+                    "font-bold text-2xl tabular-nums tracking-tight",
+                    style.count
+                  )}
+                >
+                  {row.count.toLocaleString("ru-RU")}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>

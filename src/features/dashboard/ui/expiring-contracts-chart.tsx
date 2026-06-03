@@ -1,4 +1,6 @@
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+
+import type { ExpiringChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
 import { BarCategoryTooltip } from "@/features/dashboard/ui/bar-category-tooltip";
 import {
   Card,
@@ -12,39 +14,6 @@ import {
   ChartContainer,
   ChartTooltip,
 } from "@/shared/ui/chart";
-
-const WITHIN_DAYS = 30;
-
-type ExpiringRow = {
-  name: string;
-  count: number;
-};
-
-// Contract.end_date в ближайшие withinDays, активные договоры (start_date ≤ сегодня ≤ end_date)
-const byComplex: ExpiringRow[] = [
-  { name: "Солнечный город", count: 5 },
-  { name: "Зеленый квартал", count: 2 },
-  { name: "Речной берег", count: 4 },
-  { name: "Парковый", count: 1 },
-];
-
-const bySector: Record<string, ExpiringRow[]> = {
-  "1": [
-    { name: "Дом 1", count: 2 },
-    { name: "Дом 2", count: 1 },
-    { name: "Дом 3", count: 2 },
-  ],
-  "2": [
-    { name: "Дом 1", count: 1 },
-    { name: "Дом 2", count: 1 },
-  ],
-  "3": [
-    { name: "Дом 1", count: 2 },
-    { name: "Дом 2", count: 1 },
-    { name: "Дом 3", count: 1 },
-  ],
-  "4": [{ name: "Дом 1", count: 1 }],
-};
 
 const chartConfig = {
   count: {
@@ -73,22 +42,19 @@ const pluralizeContracts = (count: number) => {
 };
 
 type ExpiringContractsChartProps = {
-  selectedComplex?: string;
+  title: string;
+  withinDays: number;
+  totalCount: number;
+  data: ExpiringChartRow[];
 };
 
 export const ExpiringContractsChart = ({
-  selectedComplex = "all",
+  title,
+  withinDays,
+  totalCount,
+  data,
 }: ExpiringContractsChartProps) => {
-  const isAllComplexes = selectedComplex === "all";
-  const chartData = (
-    isAllComplexes ? byComplex : (bySector[selectedComplex] ?? [])
-  ).filter((row) => row.count > 0);
-
-  const totalCount = chartData.reduce((sum, row) => sum + row.count, 0);
-
-  const title = isAllComplexes
-    ? "Истекающие договоры"
-    : "Истекающие договоры по домам";
+  const chartData = data.filter((row) => row.count > 0);
 
   return (
     <Card>
@@ -96,8 +62,8 @@ export const ExpiringContractsChart = ({
         <CardTitle>{title}</CardTitle>
         <CardDescription>
           {totalCount === 0
-            ? `В ближайшие ${WITHIN_DAYS} дней нет окончаний`
-            : `${totalCount} ${pluralizeContracts(totalCount)} в ближайшие ${WITHIN_DAYS} дней`}
+            ? `В ближайшие ${withinDays} дней нет окончаний`
+            : `${totalCount} ${pluralizeContracts(totalCount)} в ближайшие ${withinDays} дней`}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -118,14 +84,14 @@ export const ExpiringContractsChart = ({
               />
               <ChartTooltip
                 content={(props) => (
-                  <BarCategoryTooltip<ExpiringRow>
+                  <BarCategoryTooltip<ExpiringChartRow>
                     {...props}
                     renderDetails={(row) => (
                       <>
                         <span className="font-medium text-foreground">
                           {row.count}
                         </span>
-                        {` ${pluralizeContracts(row.count)} в ближайшие ${WITHIN_DAYS} дн.`}
+                        {` ${pluralizeContracts(row.count)} в ближайшие ${withinDays} дн.`}
                       </>
                     )}
                   />

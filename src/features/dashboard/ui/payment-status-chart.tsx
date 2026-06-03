@@ -1,4 +1,6 @@
 import { Pie, PieChart } from "recharts";
+
+import type { PieChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
   type ChartConfig,
@@ -8,50 +10,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/shared/ui/chart";
-
-type PaymentStatusKey = "PAYED" | "WAITING" | "PENDING" | "OVERDUE";
-
-// ContractPayment.status — EnumContractPaymentStatus
-const allComplexesData: Array<{
-  status: PaymentStatusKey;
-  count: number;
-  fill: string;
-}> = [
-  { status: "PAYED", count: 420, fill: "var(--chart-1)" },
-  { status: "WAITING", count: 65, fill: "var(--chart-2)" },
-  { status: "PENDING", count: 38, fill: "var(--chart-3)" },
-  { status: "OVERDUE", count: 18, fill: "var(--chart-4)" },
-];
-
-const complexesDataById: Record<
-  string,
-  Array<{ status: PaymentStatusKey; count: number; fill: string }>
-> = {
-  "1": [
-    { status: "PAYED", count: 110, fill: "var(--chart-1)" },
-    { status: "WAITING", count: 16, fill: "var(--chart-2)" },
-    { status: "PENDING", count: 10, fill: "var(--chart-3)" },
-    { status: "OVERDUE", count: 5, fill: "var(--chart-4)" },
-  ],
-  "2": [
-    { status: "PAYED", count: 105, fill: "var(--chart-1)" },
-    { status: "WAITING", count: 17, fill: "var(--chart-2)" },
-    { status: "PENDING", count: 9, fill: "var(--chart-3)" },
-    { status: "OVERDUE", count: 4, fill: "var(--chart-4)" },
-  ],
-  "3": [
-    { status: "PAYED", count: 102, fill: "var(--chart-1)" },
-    { status: "WAITING", count: 16, fill: "var(--chart-2)" },
-    { status: "PENDING", count: 10, fill: "var(--chart-3)" },
-    { status: "OVERDUE", count: 5, fill: "var(--chart-4)" },
-  ],
-  "4": [
-    { status: "PAYED", count: 103, fill: "var(--chart-1)" },
-    { status: "WAITING", count: 16, fill: "var(--chart-2)" },
-    { status: "PENDING", count: 9, fill: "var(--chart-3)" },
-    { status: "OVERDUE", count: 4, fill: "var(--chart-4)" },
-  ],
-};
 
 const chartConfig = {
   count: {
@@ -76,21 +34,14 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 type PaymentStatusChartProps = {
-  selectedComplex?: string;
+  data: PieChartRow[];
 };
 
 const PERCENT_MULTIPLIER = 100;
 const LABEL_FONT_SIZE = 12;
 
-export const PaymentStatusChart = ({
-  selectedComplex = "all",
-}: PaymentStatusChartProps) => {
-  const chartData =
-    selectedComplex === "all"
-      ? allComplexesData
-      : (complexesDataById[selectedComplex] ?? allComplexesData);
-
-  const visibleData = chartData.filter((item) => item.count > 0);
+export const PaymentStatusChart = ({ data }: PaymentStatusChartProps) => {
+  const visibleData = data.filter((item) => item.count > 0);
   const totalCount = visibleData.reduce((sum, item) => sum + item.count, 0);
 
   return (
@@ -105,7 +56,7 @@ export const PaymentStatusChart = ({
               content={
                 <ChartTooltipContent
                   formatter={(value) => [
-                    `${value} счетов (${Math.round((Number(value) / totalCount) * PERCENT_MULTIPLIER)}%)`,
+                    `${value} счетов (${totalCount > 0 ? Math.round((Number(value) / totalCount) * PERCENT_MULTIPLIER) : 0}%)`,
                   ]}
                   nameKey="status"
                 />
@@ -125,9 +76,11 @@ export const PaymentStatusChart = ({
                   x={props.x}
                   y={props.y}
                 >
-                  {Math.round(
-                    (payload.count / totalCount) * PERCENT_MULTIPLIER
-                  )}
+                  {totalCount > 0
+                    ? Math.round(
+                        (payload.count / totalCount) * PERCENT_MULTIPLIER
+                      )
+                    : 0}
                   %
                 </text>
               )}

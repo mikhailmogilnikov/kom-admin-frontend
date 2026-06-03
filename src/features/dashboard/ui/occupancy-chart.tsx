@@ -1,4 +1,10 @@
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
+import { useMemo } from "react";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import type { OccupancyChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
+import {
+  getOccupancyChartHeight,
+  getOccupancyYAxisWidth,
+} from "@/features/dashboard/lib/occupancy-chart-layout";
 import { BarCategoryTooltip } from "@/features/dashboard/ui/bar-category-tooltip";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
 import {
@@ -7,39 +13,6 @@ import {
   ChartTooltip,
 } from "@/shared/ui/chart";
 
-// Данные по ЖК (для просмотра "Все комплексы")
-const complexesData = [
-  { name: "Солнечный город", occupancy: 85, total: 24 },
-  { name: "Зеленый квартал", occupancy: 92, total: 18 },
-  { name: "Речной берег", occupancy: 78, total: 22 },
-  { name: "Парковый", occupancy: 95, total: 18 },
-];
-
-// Данные по домам для каждого ЖК
-const buildingsByComplex: Record<
-  string,
-  Array<{ name: string; occupancy: number; total: number }>
-> = {
-  "1": [
-    { name: "Дом 1", occupancy: 80, total: 10 },
-    { name: "Дом 2", occupancy: 86, total: 7 },
-    { name: "Дом 3", occupancy: 88, total: 8 },
-  ],
-  "2": [
-    { name: "Дом 1", occupancy: 90, total: 10 },
-    { name: "Дом 2", occupancy: 100, total: 8 },
-  ],
-  "3": [
-    { name: "Дом 1", occupancy: 78, total: 9 },
-    { name: "Дом 2", occupancy: 75, total: 8 },
-    { name: "Дом 3", occupancy: 83, total: 6 },
-  ],
-  "4": [
-    { name: "Дом 1", occupancy: 100, total: 9 },
-    { name: "Дом 2", occupancy: 89, total: 9 },
-  ],
-};
-
 const chartConfig = {
   occupancy: {
     label: "Занятость",
@@ -47,30 +20,24 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+const OCCUPANCY_DOMAIN_MAX = 100;
+
 type OccupancyChartProps = {
-  selectedComplex?: string;
+  title: string;
+  data: OccupancyChartRow[];
 };
 
 const PERCENT_MULTIPLIER = 100;
 
-type OccupancyRow = {
-  name: string;
-  occupancy: number;
-  total: number;
-};
-
-const occupiedFromRow = (row: OccupancyRow) =>
+const occupiedFromRow = (row: OccupancyChartRow) =>
   Math.round((row.occupancy * row.total) / PERCENT_MULTIPLIER);
 
-export const OccupancyChart = ({
-  selectedComplex = "all",
-}: OccupancyChartProps) => {
-  const isAllComplexes = selectedComplex === "all";
-  const chartData = isAllComplexes
-    ? complexesData
-    : buildingsByComplex[selectedComplex] || [];
-
-  const title = isAllComplexes ? "Занятость ЖК" : "Занятость по домам";
+export const OccupancyChart = ({ title, data }: OccupancyChartProps) => {
+  const yAxisWidth = useMemo(() => getOccupancyYAxisWidth(data), [data]);
+  const chartHeight = useMemo(
+    () => getOccupancyChartHeight(data.length),
+    [data.length]
+  );
 
   return (
     <Card>
@@ -78,18 +45,37 @@ export const OccupancyChart = ({
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer className="h-70" config={chartConfig}>
-          <BarChart accessibilityLayer data={chartData}>
-            <CartesianGrid vertical={false} />
+        <ChartContainer
+          className="w-full"
+          config={chartConfig}
+          style={{ height: chartHeight }}
+        >
+          <BarChart
+            accessibilityLayer
+            data={data}
+            layout="vertical"
+            margin={{ bottom: 8, left: 4, right: 16, top: 8 }}
+          >
+            <CartesianGrid horizontal={false} />
             <XAxis
               axisLine={false}
-              dataKey="name"
+              domain={[0, OCCUPANCY_DOMAIN_MAX]}
+              tickFormatter={(value) => `${value}%`}
               tickLine={false}
-              tickMargin={10}
+              type="number"
+            />
+            <YAxis
+              axisLine={false}
+              dataKey="name"
+              interval={0}
+              tick={{ fontSize: 11 }}
+              tickLine={false}
+              type="category"
+              width={yAxisWidth}
             />
             <ChartTooltip
               content={(props) => (
-                <BarCategoryTooltip<OccupancyRow>
+                <BarCategoryTooltip<OccupancyChartRow>
                   {...props}
                   renderDetails={(row) => (
                     <>
@@ -102,7 +88,13 @@ export const OccupancyChart = ({
                 />
               )}
             />
-            <Bar dataKey="occupancy" fill="var(--color-occupancy)" radius={4} />
+            <Bar
+              dataKey="occupancy"
+              fill="var(--color-occupancy)"
+              layout="vertical"
+              maxBarSize={28}
+              radius={4}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>

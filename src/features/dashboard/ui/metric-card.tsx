@@ -20,30 +20,43 @@ export const MetricCard = ({
   icon: Icon,
   trend,
   snapshotCaption,
-}: MetricCardProps) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="font-medium text-sm">{title}</CardTitle>
-      <Icon className="size-4 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      <div className="font-bold text-2xl">{value}</div>
-      {description && (
-        <p className="text-muted-foreground text-xs">{description}</p>
-      )}
-      {snapshotCaption && (
-        <p className="mt-2 text-muted-foreground text-xs">{snapshotCaption}</p>
-      )}
-      {trend && (
-        <p
-          className={`mt-2 text-xs ${
-            trend.isPositive ? "text-green-500" : "text-red-500"
-          }`}
-        >
-          {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}% от прошлого
-          периода
-        </p>
-      )}
-    </CardContent>
-  </Card>
-);
+}: MetricCardProps) => {
+  const hasFooter = Boolean(snapshotCaption ?? trend);
+
+  return (
+    <Card className="flex h-full flex-col gap-2 p-4">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0">
+        <CardTitle className="font-medium text-sm">{title}</CardTitle>
+        <Icon className="size-4 text-muted-foreground" />
+      </CardHeader>
+      <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+        <div>
+          <div className="font-bold text-2xl tabular-nums">{value}</div>
+          {description ? (
+            <p className="mt-1 text-muted-foreground text-xs">{description}</p>
+          ) : null}
+        </div>
+
+        {hasFooter ? (
+          <div className="mt-auto space-y-0.5 pt-2">
+            {snapshotCaption ? (
+              <p className="text-muted-foreground text-xs">{snapshotCaption}</p>
+            ) : null}
+            {trend ? (
+              <p
+                className={
+                  trend.isPositive
+                    ? "text-green-500 text-xs"
+                    : "text-red-500 text-xs"
+                }
+              >
+                {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}% от
+                прошлого периода
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+};
