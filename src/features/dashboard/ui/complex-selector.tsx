@@ -1,5 +1,11 @@
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import {
+  ALL_COMPLEX_VALUE,
+  buildComplexOptions,
+} from "@/features/dashboard/lib/apartment-complex-options";
+import { useApartmentComplexes } from "@/features/dashboard/model/use-apartment-complexes";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -12,14 +18,7 @@ import {
 } from "@/shared/ui/command";
 import { Label } from "@/shared/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/shared/ui/popover";
-
-const COMPLEXES = [
-  { value: "all", label: "Все комплексы" },
-  { value: "1", label: "ЖК «Солнечный город»" },
-  { value: "2", label: "ЖК «Зеленый квартал»" },
-  { value: "3", label: "ЖК «Речной берег»" },
-  { value: "4", label: "ЖК «Парковый»" },
-];
+import { Spinner } from "@/shared/ui/spinner";
 
 type ComplexSelectorProps = {
   onComplexChange?: (complex: string) => void;
@@ -27,15 +26,21 @@ type ComplexSelectorProps = {
 
 export const ComplexSelector = ({ onComplexChange }: ComplexSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("all");
+  const [value, setValue] = useState(ALL_COMPLEX_VALUE);
+
+  const { data: complexes, isPending, isError } = useApartmentComplexes();
+
+  const options = useMemo(() => buildComplexOptions(complexes), [complexes]);
+
+  const selectedLabel = options.find(
+    (complex) => complex.value === value
+  )?.label;
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? "all" : currentValue;
+    const newValue = currentValue === value ? ALL_COMPLEX_VALUE : currentValue;
     setValue(newValue);
     setOpen(false);
-    if (onComplexChange) {
-      onComplexChange(newValue);
-    }
+    onComplexChange?.(newValue);
   };
 
   return (
@@ -48,13 +53,20 @@ export const ComplexSelector = ({ onComplexChange }: ComplexSelectorProps) => {
           <Button
             aria-expanded={open}
             className="w-70 justify-between bg-card font-normal shadow-lg hover:bg-card/90 max-md:w-full"
+            disabled={isPending}
             id="complex-selector"
             role="combobox"
+            type="button"
             variant="outline"
           >
-            {value
-              ? COMPLEXES.find((complex) => complex.value === value)?.label
-              : "Выберите комплекс"}
+            {isPending ? (
+              <span className="flex items-center gap-2">
+                <Spinner className="size-4" />
+                Загрузка…
+              </span>
+            ) : (
+              (selectedLabel ?? "Выберите комплекс")
+            )}
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -62,9 +74,13 @@ export const ComplexSelector = ({ onComplexChange }: ComplexSelectorProps) => {
           <Command>
             <CommandInput placeholder="Поиск комплекса..." />
             <CommandList>
-              <CommandEmpty>Комплекс не найден</CommandEmpty>
+              <CommandEmpty>
+                {isError
+                  ? "Не удалось загрузить список ЖК"
+                  : "Комплекс не найден"}
+              </CommandEmpty>
               <CommandGroup>
-                {COMPLEXES.map((complex) => (
+                {options.map((complex) => (
                   <CommandItem
                     key={complex.value}
                     keywords={[complex.label]}
