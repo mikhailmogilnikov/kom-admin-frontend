@@ -6,7 +6,12 @@ import {
   getOccupancyYAxisWidth,
 } from "@/features/dashboard/lib/occupancy-chart-layout";
 import { BarCategoryTooltip } from "@/features/dashboard/ui/bar-category-tooltip";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -40,11 +45,9 @@ export const OccupancyChart = ({ title, data }: OccupancyChartProps) => {
   );
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className={dashboardChartCardClassName}>
+      <DashboardCardHeader title={title} />
+      <CardContent className={dashboardChartCardContentClassName}>
         <ChartContainer
           className="w-full"
           config={chartConfig}

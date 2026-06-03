@@ -1,7 +1,12 @@
 import { CartesianGrid, Line, LineChart, XAxis } from "recharts";
 
 import type { PaymentsDynamicRow } from "@/features/dashboard/lib/map-dashboard-charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -27,11 +32,9 @@ type PaymentsDynamicChartProps = {
 };
 
 export const PaymentsDynamicChart = ({ data }: PaymentsDynamicChartProps) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Динамика оплат</CardTitle>
-    </CardHeader>
-    <CardContent>
+  <Card className={dashboardChartCardClassName}>
+    <DashboardCardHeader title="Динамика оплат" />
+    <CardContent className={dashboardChartCardContentClassName}>
       <ChartContainer className="h-70" config={chartConfig}>
         <LineChart
           accessibilityLayer

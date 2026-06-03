@@ -1,7 +1,12 @@
 import { Pie, PieChart } from "recharts";
 
 import type { PieChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -45,11 +50,9 @@ export const PaymentStatusChart = ({ data }: PaymentStatusChartProps) => {
   const totalCount = visibleData.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Статус оплат</CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className={dashboardChartCardClassName}>
+      <DashboardCardHeader title="Статус оплат" />
+      <CardContent className={dashboardChartCardContentClassName}>
         <ChartContainer className="h-70" config={chartConfig}>
           <PieChart>
             <ChartTooltip

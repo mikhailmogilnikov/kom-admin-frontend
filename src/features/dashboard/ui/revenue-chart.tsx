@@ -1,7 +1,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import type { RevenueChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -21,11 +26,9 @@ type RevenueChartProps = {
 };
 
 export const RevenueChart = ({ data }: RevenueChartProps) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Доход от аренды</CardTitle>
-    </CardHeader>
-    <CardContent>
+  <Card className={dashboardChartCardClassName}>
+    <DashboardCardHeader title="Доход от аренды" />
+    <CardContent className={dashboardChartCardContentClassName}>
       <ChartContainer className="h-70" config={chartConfig}>
         <AreaChart
           accessibilityLayer

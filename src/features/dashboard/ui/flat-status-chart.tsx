@@ -1,7 +1,12 @@
 import { Pie, PieChart } from "recharts";
 
 import type { PieChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -40,37 +45,43 @@ export const FlatStatusChart = ({ data }: FlatStatusChartProps) => {
   const visibleData = data.filter((item) => item.count > 0);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Статусы квартир</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer
-          className="mx-auto aspect-square max-h-[300px]"
-          config={chartConfig}
-        >
-          <PieChart>
-            <ChartTooltip content={<ChartTooltipContent nameKey="status" />} />
-            <Pie
-              cx="50%"
-              cy="50%"
-              data={visibleData}
-              dataKey="count"
-              innerRadius={60}
-              label={({ percent }) =>
-                `${(percent * PERCENT_MULTIPLIER).toFixed(0)}%`
-              }
-              labelLine={false}
-              nameKey="status"
-              outerRadius={80}
-              strokeWidth={2}
-            />
-            <ChartLegend
-              content={<ChartLegendContent nameKey="status" />}
-              wrapperStyle={{ fontSize: LABEL_FONT_SIZE }}
-            />
-          </PieChart>
-        </ChartContainer>
+    <Card className={dashboardChartCardClassName}>
+      <DashboardCardHeader title="Статусы квартир" />
+      <CardContent className={dashboardChartCardContentClassName}>
+        {visibleData.length === 0 ? (
+          <p className="flex h-70 shrink-0 items-center justify-center text-muted-foreground text-sm">
+            Нет данных по статусам квартир
+          </p>
+        ) : (
+          <ChartContainer
+            className="mx-auto h-70 w-full max-w-[300px] shrink-0"
+            config={chartConfig}
+          >
+            <PieChart>
+              <ChartTooltip
+                content={<ChartTooltipContent nameKey="status" />}
+              />
+              <Pie
+                cx="50%"
+                cy="50%"
+                data={visibleData}
+                dataKey="count"
+                innerRadius={60}
+                label={({ percent }) =>
+                  `${(percent * PERCENT_MULTIPLIER).toFixed(0)}%`
+                }
+                labelLine={false}
+                nameKey="status"
+                outerRadius={80}
+                strokeWidth={2}
+              />
+              <ChartLegend
+                content={<ChartLegendContent nameKey="status" />}
+                wrapperStyle={{ fontSize: LABEL_FONT_SIZE }}
+              />
+            </PieChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );

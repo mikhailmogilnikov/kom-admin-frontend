@@ -1,5 +1,12 @@
 import type { LucideIcon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+
+import {
+  DashboardCardHeader,
+  dashboardCardClassName,
+  dashboardCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { cn } from "@/shared/lib/utils";
+import { Card, CardContent } from "@/shared/ui/card";
 
 type MetricCardProps = {
   title: string;
@@ -24,12 +31,14 @@ export const MetricCard = ({
   const hasFooter = Boolean(snapshotCaption ?? trend);
 
   return (
-    <Card className="flex h-full flex-col gap-2 p-4">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 p-0">
-        <CardTitle className="font-medium text-sm">{title}</CardTitle>
-        <Icon className="size-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent className="flex min-h-0 flex-1 flex-col p-0">
+    <Card className={cn("flex h-full flex-col", dashboardCardClassName)}>
+      <DashboardCardHeader icon={Icon} title={title} titleVariant="compact" />
+      <CardContent
+        className={cn(
+          "flex min-h-0 flex-1 flex-col",
+          dashboardCardContentClassName
+        )}
+      >
         <div>
           <div className="font-bold text-2xl tabular-nums">{value}</div>
           {description ? (

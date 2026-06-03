@@ -1,8 +1,12 @@
 import { ClipboardListIcon } from "lucide-react";
-
+import {
+  DashboardCardHeader,
+  dashboardCardClassName,
+  dashboardCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
 import type { components } from "@/shared/api/schema";
 import { cn } from "@/shared/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import { Card, CardContent } from "@/shared/ui/card";
 
 type ApplicationsSummary = components["schemas"]["ApplicationsSummaryResponse"];
 
@@ -54,12 +58,14 @@ export const ApplicationsSummaryCard = ({
   const totalCount = summary.items.reduce((sum, row) => sum + row.count, 0);
 
   return (
-    <Card className="flex h-full flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="font-medium text-sm">Заявки</CardTitle>
-        <ClipboardListIcon className="size-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-5">
+    <Card className={cn("flex h-full flex-col", dashboardCardClassName)}>
+      <DashboardCardHeader icon={ClipboardListIcon} title="Заявки" />
+      <CardContent
+        className={cn(
+          "flex flex-1 flex-col gap-5",
+          dashboardCardContentClassName
+        )}
+      >
         <div className="flex items-center justify-between gap-4 rounded-xl border bg-linear-to-br from-primary/5 via-background to-muted/30 p-5">
           <div className="space-y-1">
             <p className="font-bold text-4xl tabular-nums tracking-tight">

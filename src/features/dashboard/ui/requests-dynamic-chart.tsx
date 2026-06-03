@@ -1,7 +1,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 
 import type { RequestsDynamicRow } from "@/features/dashboard/lib/map-dashboard-charts";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/ui/card";
+import {
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -31,11 +36,9 @@ type RequestsDynamicChartProps = {
 };
 
 export const RequestsDynamicChart = ({ data }: RequestsDynamicChartProps) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Динамика заявок</CardTitle>
-    </CardHeader>
-    <CardContent>
+  <Card className={dashboardChartCardClassName}>
+    <DashboardCardHeader title="Динамика заявок" />
+    <CardContent className={dashboardChartCardContentClassName}>
       <ChartContainer className="h-70" config={chartConfig}>
         <AreaChart
           accessibilityLayer

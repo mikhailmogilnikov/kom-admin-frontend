@@ -3,12 +3,11 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
 import type { ExpiringChartRow } from "@/features/dashboard/lib/map-dashboard-charts";
 import { BarCategoryTooltip } from "@/features/dashboard/ui/bar-category-tooltip";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/ui/card";
+  DashboardCardHeader,
+  dashboardChartCardClassName,
+  dashboardChartCardContentClassName,
+} from "@/features/dashboard/ui/dashboard-card-header";
+import { Card, CardContent } from "@/shared/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -55,18 +54,15 @@ export const ExpiringContractsChart = ({
   data,
 }: ExpiringContractsChartProps) => {
   const chartData = data.filter((row) => row.count > 0);
+  const description =
+    totalCount === 0
+      ? `В ближайшие ${withinDays} дней нет окончаний`
+      : `${totalCount} ${pluralizeContracts(totalCount)} в ближайшие ${withinDays} дней`;
 
   return (
-    <Card>
-      <CardHeader className="space-y-1">
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>
-          {totalCount === 0
-            ? `В ближайшие ${withinDays} дней нет окончаний`
-            : `${totalCount} ${pluralizeContracts(totalCount)} в ближайшие ${withinDays} дней`}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+    <Card className={dashboardChartCardClassName}>
+      <DashboardCardHeader description={description} title={title} />
+      <CardContent className={dashboardChartCardContentClassName}>
         {totalCount === 0 ? (
           <p className="flex h-70 items-center justify-center text-muted-foreground text-sm">
             Всё в порядке — продлений не требуется
